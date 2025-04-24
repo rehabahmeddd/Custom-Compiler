@@ -1,0 +1,47 @@
+int main() {
+    // Valid tokens
+    int x = 5;
+    float pi = 3.14;
+    double y = 2.718;
+    char c = 'a';
+    bool flag = true;
+    string str = "Hello, World!";
+    const int constant = 100;
+
+    // Operators
+    x = x + 1;
+    y = y * 2;
+    x = x / 2;
+    x = x - 1;
+    x = x % 3;
+    if (x == y) {
+        x = x > y;
+    }
+
+    // Logical operators
+    if (flag && (x || y)) {
+        x = !y;
+    }
+
+    // Comparison operators
+    if (x != y) {
+        x = x <= y;
+        x = x >= y;
+    }
+
+    // Control flow
+    if (x > 0) {
+        return 0;
+    } else {
+        return 1;
+    }
+
+    // Invalid tokens
+    int 1x = 10;         // Invalid identifier: starts with a number
+    float float = 5.5;   // Invalid identifier: "float" is a reserved keyword
+    string "string";     // Invalid syntax: string literal without assignment
+    char c = 'abc';          // Invalid character literal with more than one character
+    bool = true;         // Invalid assignment syntax
+
+    return 0;
+}
