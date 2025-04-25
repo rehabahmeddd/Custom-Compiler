@@ -91,10 +91,6 @@ function_type:
     | VOID_TYPE
 ;
 
-declarations:
-    declarations declaration
-    | /* empty */
-;
 
 declaration:
     parameter_type ID SEMICOLON {
@@ -109,12 +105,22 @@ declaration:
 ;
 
 block:
-    LBRACE declarations statements RBRACE
+    LBRACE block_items RBRACE
+;
+
+block_items:
+    block_items block_item
+    | /*empty*/
+;
+
+block_item:
+    declaration
+    | statement
 ;
 
 statements:
     statements statement
-    | /* empty */
+    | /*empty*/
 ;
 
 statement:
@@ -172,12 +178,18 @@ do_while_loop:
 ;
 
 for_loop:
-    FOR LPAREN assignment SEMICOLON expression SEMICOLON assignment RPAREN loop_statement {
+    FOR LPAREN for_init expression SEMICOLON for_update RPAREN statement {
         printf("For loop\n");
     }
-    |FOR LPAREN parameter_type assignment SEMICOLON expression SEMICOLON assignment RPAREN loop_statement {
-        printf("For loop with declaration\n");
-    }
+;
+
+for_init:
+    assignment SEMICOLON
+    | declaration
+;
+
+for_update:
+    assignment
 ;
 
 switch_statement:
