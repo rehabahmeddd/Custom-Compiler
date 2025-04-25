@@ -129,6 +129,7 @@ statement:
     | while_loop
     | do_while_loop
     | for_loop
+    | loop_statement
     | switch_statement
     | block
     | RETURN expression SEMICOLON {
@@ -155,8 +156,7 @@ if_statement:
 ;
 
 loop_statement:
-    statement
-    | BREAK SEMICOLON {
+    BREAK SEMICOLON {
         printf("Break statement\n");
     }
     | CONTINUE SEMICOLON {
@@ -165,14 +165,14 @@ loop_statement:
 ;
 
 while_loop:
-    WHILE LPAREN expression RPAREN loop_statement {
+    WHILE LPAREN expression RPAREN statement {
         printf("While loop\n");
     }
 
 ;
 
 do_while_loop:
-    DO loop_statement WHILE LPAREN expression RPAREN SEMICOLON {
+    DO statement WHILE LPAREN expression RPAREN SEMICOLON {
         printf("Do-while loop\n");
     }
 ;

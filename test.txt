@@ -9,8 +9,9 @@ int main() {
     float pi = 3.14;
     for (i = 0; i < 3; i = i + 1)
     {
-        add(a,pi);
+        x = x + 1;
     }
+    break;
     int z = 9;
     return 0;
 }
