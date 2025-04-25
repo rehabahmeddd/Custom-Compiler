@@ -18,7 +18,6 @@ void yyerror(const char *s) {
     bool  bval;
 }
 
-%debug
 %token <sval> ID
 %token <ival> INT
 %token <fval> FLOAT
@@ -136,12 +135,6 @@ statement:
     | RETURN expression SEMICOLON {
         printf("Return statement\n");
     }
-    | BREAK SEMICOLON {
-        printf("Break statement\n");
-    }
-    | CONTINUE SEMICOLON {
-        printf("Continue statement\n");
-    }
     | SEMICOLON
     | function_call SEMICOLON {fprintf(stderr, "Function call handling not implemented statement\n"); }
   
@@ -162,8 +155,14 @@ if_statement:
     }
 ;
 
-
-
+loop_statement:
+    BREAK SEMICOLON {
+        printf("Break statement\n");
+    }
+    | CONTINUE SEMICOLON {
+        printf("Continue statement\n");
+    }
+;
 
 while_loop:
     WHILE LPAREN expression RPAREN statement {
