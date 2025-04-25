@@ -40,18 +40,48 @@ void yyerror(const char *s) {
 
 %token LPAREN RPAREN LBRACE RBRACE SEMICOLON COMMA COLON
 
-%type <ival> expression additive_expr multiplicative_expr relational_expr equality_expr and_expr or_expr unary_expr primary_expr
+%type <ival> expression additive_expression multiplicative_expr relational_expression equality_expression logical_and_expression logical_or_expression unary_expr primary_expr assignment_expression postfix_expression function_call
 
 %%
 
 program:
-    program statement
-    | program function
-    | /* empty */
+    translation_unit
 ;
 
-function:
-    function_type ID LPAREN parameters RPAREN block {
+translation_unit:
+    translation_unit external_declaration
+    | external_declaration
+;
+
+external_declaration:
+    function_definition
+    | global_declaration
+;
+
+global_declaration:
+    type_specifier ID SEMICOLON {
+        printf("Global Declaration: %s\n", $2);
+    }
+    | type_specifier ID ASSIGN expression SEMICOLON {
+        printf("Global Declaration with assignment: %s\n", $2);
+    }
+    | CONST type_specifier ID ASSIGN expression SEMICOLON {
+        printf("Global Constant declaration: %s\n", $3);
+    }
+;
+
+type_specifier:
+    INT_TYPE
+    | FLOAT_TYPE
+    | DOUBLE_TYPE
+    | STRING_TYPE
+    | CHAR_TYPE
+    | BOOL_TYPE
+    | VOID_TYPE
+;
+
+function_definition:
+    type_specifier ID LPAREN parameters RPAREN compound_statement {
         printf("Function: %s\n", $2);
     }
 ;
@@ -67,50 +97,18 @@ parameter_list:
 ;
 
 parameter:
-    parameter_type ID {
+    type_specifier ID {
         printf("Parameter: type and name = [type], %s\n", $2);
     }
 ;
 
-parameter_type:
-    INT_TYPE
-    | FLOAT_TYPE
-    | STRING_TYPE
-    | CHAR_TYPE
-    | BOOL_TYPE
-    | DOUBLE_TYPE
+compound_statement:
+    LBRACE block_item_list RBRACE
 ;
 
-function_type:
-    INT_TYPE
-    | FLOAT_TYPE
-    | STRING_TYPE
-    | CHAR_TYPE
-    | BOOL_TYPE
-    | DOUBLE_TYPE
-    | VOID_TYPE
-;
-
-
-declaration:
-    parameter_type ID SEMICOLON {
-        printf("Declaration: %s\n", $2);
-    }
-    | parameter_type ID ASSIGN expression SEMICOLON {
-        printf("Declaration with assignment: %s\n", $2);
-    }
-    | CONST parameter_type ID ASSIGN expression SEMICOLON {
-        printf("Constant declaration: %s\n", $3);
-    }
-;
-
-block:
-    LBRACE block_items RBRACE
-;
-
-block_items:
-    block_items block_item
-    | /*empty*/
+block_item_list:
+    block_item_list block_item
+    | /* empty */
 ;
 
 block_item:
@@ -118,82 +116,39 @@ block_item:
     | statement
 ;
 
-statements:
-    statements statement
-    | /*empty*/
+declaration:
+    type_specifier ID SEMICOLON {
+        printf("Local Declaration: %s\n", $2);
+    }
+    | type_specifier ID ASSIGN expression SEMICOLON {
+        printf("Local Declaration with assignment: %s\n", $2);
+    }
+    | CONST type_specifier ID ASSIGN expression SEMICOLON {
+        printf("Local Constant declaration: %s\n", $3);
+    }
 ;
 
 statement:
-    assignment SEMICOLON
-    | if_statement
-    | while_loop
-    | do_while_loop
-    | for_loop
-    | loop_statement
-    | switch_statement
-    | block
-    | RETURN expression SEMICOLON {
-        printf("Return statement\n");
-    }
+    expression_statement
+    | compound_statement
+    | selection_statement
+    | iteration_statement
+    | jump_statement
+;
+
+expression_statement:
+    expression SEMICOLON
     | SEMICOLON
-    | function_call SEMICOLON {fprintf(stderr, "Function call handling not implemented statement\n"); }
-  
 ;
 
-assignment:
-    ID ASSIGN expression  {
-        printf("Assignment to %s\n", $1);
-    }
-;
-
-if_statement:
+selection_statement:
     IF LPAREN expression RPAREN statement %prec LOWER_THAN_ELSE {
         printf("If statement\n");
     }
     | IF LPAREN expression RPAREN statement ELSE statement {
         printf("If-else statement\n");
     }
-;
-
-loop_statement:
-    BREAK SEMICOLON {
-        printf("Break statement\n");
-    }
-    | CONTINUE SEMICOLON {
-        printf("Continue statement\n");
-    }
-;
-
-while_loop:
-    WHILE LPAREN expression RPAREN statement {
-        printf("While loop\n");
-    }
-
-;
-
-do_while_loop:
-    DO statement WHILE LPAREN expression RPAREN SEMICOLON {
-        printf("Do-while loop\n");
-    }
-;
-
-for_loop:
-    FOR LPAREN for_init expression SEMICOLON for_update RPAREN statement {
-        printf("For loop\n");
-    }
-;
-
-for_init:
-    assignment SEMICOLON
-    | declaration
-;
-
-for_update:
-    assignment
-;
-
-switch_statement:
-    SWITCH LPAREN expression RPAREN LBRACE case_list RBRACE {
+    | SWITCH LPAREN expression RPAREN LBRACE case_list RBRACE {
         printf("Switch statement\n");
     }
 ;
@@ -204,83 +159,132 @@ case_list:
 ;
 
 case:
-    CASE INT COLON statements {
+    CASE INT COLON statement_list {
         printf("Case: %d\n", $2);
     }
-    | DEFAULT COLON statements {
+    | DEFAULT COLON statement_list {
         printf("Default case\n");
     }
 ;
 
-expression: 
-          or_expr
+statement_list:
+    statement_list statement
+    | /* empty */
 ;
 
-or_expr:
-         or_expr OR and_expr { $$ = $1 || $3; printf("Logical OR\n"); }
-        | and_expr 
+iteration_statement:
+    WHILE LPAREN expression RPAREN statement {
+        printf("While loop\n");
+    }
+    | DO statement WHILE LPAREN expression RPAREN SEMICOLON {
+        printf("Do-while loop\n");
+    }
+    | FOR LPAREN for_clause RPAREN statement {
+        printf("For loop\n");
+    }
 ;
 
-and_expr: 
-         and_expr AND equality_expr { $$ = $1 && $3; printf("Logical AND\n"); }
-         | equality_expr 
+for_clause:
+    for_init_statement expression SEMICOLON expression
 ;
 
-equality_expr:
-            equality_expr EQ relational_expr { $$ = $1 == $3; printf("Equality\n"); }
-            | equality_expr NEQ relational_expr { $$ = $1 != $3; printf("Not Equal\n"); }
-            | relational_expr 
+for_init_statement:
+    expression_statement
+    | declaration
 ;
 
-relational_expr: 
-                relational_expr LT additive_expr { $$ = $1 < $3; printf("Less than\n"); }
-                | relational_expr LE additive_expr { $$ = $1 <= $3; printf("Less than or equal\n"); }
-                | relational_expr GT additive_expr { $$ = $1 > $3; printf("Greater than\n"); }
-                | relational_expr GE additive_expr { $$ = $1 >= $3; printf("Greater than or equal\n"); }
-                | additive_expr 
+jump_statement:
+    RETURN expression SEMICOLON {
+        printf("Return statement\n");
+    }
+    | BREAK SEMICOLON {
+        printf("Break statement\n");
+    }
+    | CONTINUE SEMICOLON {
+        printf("Continue statement\n");
+    }
 ;
 
-additive_expr:
-                 additive_expr ADD multiplicative_expr { $$ = $1 + $3; printf("Addition\n"); }
-                 | additive_expr SUB multiplicative_expr { $$ = $1 - $3; printf("Subtraction\n"); }
-                 | multiplicative_expr 
+expression:
+    assignment_expression
 ;
 
-multiplicative_expr: 
-                 multiplicative_expr MUL unary_expr { $$ = $1 * $3; printf("Multiplication\n"); }
-                 | multiplicative_expr DIV unary_expr { $$ = $1 / $3; printf("Division\n"); }
-                 | multiplicative_expr MOD unary_expr { $$ = $1 % $3; printf("Modulo\n"); }
-                 | unary_expr 
+assignment_expression:
+    logical_or_expression
+    | ID ASSIGN assignment_expression {printf("Assignment to %s\n", $1);}
+;
+
+logical_or_expression:
+    logical_and_expression
+    | logical_or_expression OR logical_and_expression { printf("Logical OR\n"); }
+;
+
+logical_and_expression:
+    equality_expression
+    | logical_and_expression AND equality_expression { printf("Logical AND\n"); }
+;
+
+equality_expression:
+    relational_expression
+    | equality_expression EQ relational_expression { printf("Equality\n");}
+    | equality_expression NEQ relational_expression {printf("Not Equal\n");}
+;
+
+relational_expression:
+    additive_expression
+    | relational_expression LT additive_expression { printf("Less than\n"); }
+    | relational_expression GT additive_expression { printf("Greater than\n"); }
+    | relational_expression LE additive_expression { printf("Less than or equal\n"); }
+    | relational_expression GE additive_expression { printf("Greater than or equal\n"); }
+;
+
+additive_expression:
+    multiplicative_expr
+    | additive_expression ADD multiplicative_expr { printf("Addition\n"); }
+    | additive_expression SUB multiplicative_expr { printf("Subtraction\n"); }
+;
+
+multiplicative_expr:
+    unary_expr
+    | multiplicative_expr MUL unary_expr { printf("Multiplication\n"); }
+    | multiplicative_expr DIV unary_expr { printf("Division\n"); }
+    | multiplicative_expr MOD unary_expr { printf("Modulo\n"); }
 ;
 
 unary_expr:
-      NOT unary_expr     { $$ = !$2; printf("Logical NOT\n"); }
-    | primary_expr       { $$ = $1; }
+    postfix_expression
+    | NOT unary_expr { printf("Logical NOT\n"); }
+;
+
+postfix_expression:
+    primary_expr
+    | function_call
 ;
 
 primary_expr:
-      INT    { $$ = $1; printf("Primary int: %d\n", $1); }
-    | FLOAT  { $$ = (int)$1; printf("Primary float: %f\n", $1); }
-    | DOUBLE { $$ = (int)$1; printf("Primary double: %f\n", $1); }
-    | STRING { $$ = 0; fprintf(stderr, "Warning: string in expression not supported\n"); }
-    | CHAR   { $$ = $1[0]; printf("Primary char: %c\n", $1[0]); }
-    | BOOL   { $$ = $1 ? 1 : 0; printf("Primary bool: %s\n", $1 ? "true" : "false"); }
-    | ID     { $$ = sym[$1[0] - 'a']; printf("Primary ID: %s = %d\n", $1, $$); }
+    ID { printf("Primary ID: %s = %d\n", $1, $$); }
+    | INT { printf("Primary int: %d\n", $1);}
+    | FLOAT { printf("Primary float: %f\n", $1); }
+    | DOUBLE { printf("Primary double: %f\n", $1); }
+    | STRING { printf("Primary string: %s\n",$1); }
+    | CHAR { printf("Primary char: %c\n", $1[1]); }
+    | BOOL { printf("Primary bool: %s\n", $1 ? "true" : "false"); }
     | LPAREN expression RPAREN { $$ = $2; }
-    | function_call { $$ = 0; fprintf(stderr, "Function call handling not implemented\n"); }
 ;
 
-function_call: 
-              ID LPAREN argument_list RPAREN {
-                  printf("Function call to: %s\n", $1);
-              }
+function_call:
+    ID LPAREN argument_list RPAREN {
+        printf("Function call to: %s\n", $1);
+    }
 ;
 
-argument_list
-    : /* empty */
-    | expression
-    | argument_list COMMA expression 
+
+argument_list:
+    assignment_expression
+    | argument_list COMMA assignment_expression
+    | /* empty */
 ;
+
 
 %%
 
