@@ -106,7 +106,7 @@ void yyerror(const char *s) {
 
 /* Debug traces.  */
 #ifndef YYDEBUG
-# define YYDEBUG 0
+# define YYDEBUG 1
 #endif
 #if YYDEBUG
 extern int yydebug;
@@ -683,16 +683,16 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    48,    48,    49,    50,    54,    60,    61,    65,    66,
-      70,    76,    77,    78,    79,    80,    81,    85,    86,    87,
-      88,    89,    90,    91,    96,    99,   102,   108,   112,   113,
-     117,   118,   122,   123,   127,   128,   129,   130,   131,   132,
-     133,   134,   135,   138,   139,   144,   150,   153,   159,   162,
-     168,   175,   181,   187,   188,   192,   196,   202,   203,   207,
-     210,   216,   220,   221,   225,   226,   230,   231,   232,   236,
-     237,   238,   239,   240,   244,   245,   246,   250,   251,   252,
-     253,   257,   258,   262,   263,   264,   265,   266,   267,   268,
-     269,   270,   274,   280,   281,   282
+       0,    49,    49,    50,    51,    55,    61,    62,    66,    67,
+      71,    77,    78,    79,    80,    81,    82,    86,    87,    88,
+      89,    90,    91,    92,    97,   100,   103,   109,   113,   114,
+     118,   119,   123,   124,   128,   129,   130,   131,   132,   133,
+     134,   135,   138,   139,   144,   150,   153,   161,   162,   165,
+     171,   178,   184,   190,   191,   195,   199,   205,   206,   210,
+     213,   219,   223,   224,   228,   229,   233,   234,   235,   239,
+     240,   241,   242,   243,   247,   248,   249,   253,   254,   255,
+     256,   260,   261,   265,   266,   267,   268,   269,   270,   271,
+     272,   273,   277,   283,   284,   285
 };
 #endif
 
@@ -1374,7 +1374,7 @@ yyreduce:
   switch (yyn)
     {
   case 5: /* function: function_type ID LPAREN parameters RPAREN block  */
-#line 54 "parser.y"
+#line 55 "parser.y"
                                                     {
         printf("Function: %s\n", (yyvsp[-4].sval));
     }
@@ -1382,7 +1382,7 @@ yyreduce:
     break;
 
   case 10: /* parameter: parameter_type ID  */
-#line 70 "parser.y"
+#line 71 "parser.y"
                       {
         printf("Parameter: type and name = [type], %s\n", (yyvsp[0].sval));
     }
@@ -1390,7 +1390,7 @@ yyreduce:
     break;
 
   case 24: /* declaration: parameter_type ID SEMICOLON  */
-#line 96 "parser.y"
+#line 97 "parser.y"
                                 {
         printf("Declaration: %s\n", (yyvsp[-1].sval));
     }
@@ -1398,7 +1398,7 @@ yyreduce:
     break;
 
   case 25: /* declaration: parameter_type ID ASSIGN expression SEMICOLON  */
-#line 99 "parser.y"
+#line 100 "parser.y"
                                                     {
         printf("Declaration with assignment: %s\n", (yyvsp[-3].sval));
     }
@@ -1406,14 +1406,14 @@ yyreduce:
     break;
 
   case 26: /* declaration: CONST parameter_type ID ASSIGN expression SEMICOLON  */
-#line 102 "parser.y"
+#line 103 "parser.y"
                                                           {
         printf("Constant declaration: %s\n", (yyvsp[-3].sval));
     }
 #line 1414 "parser.tab.c"
     break;
 
-  case 42: /* statement: RETURN expression SEMICOLON  */
+  case 41: /* statement: RETURN expression SEMICOLON  */
 #line 135 "parser.y"
                                   {
         printf("Return statement\n");
@@ -1421,13 +1421,13 @@ yyreduce:
 #line 1422 "parser.tab.c"
     break;
 
-  case 44: /* statement: function_call SEMICOLON  */
+  case 43: /* statement: function_call SEMICOLON  */
 #line 139 "parser.y"
                               {fprintf(stderr, "Function call handling not implemented statement\n"); }
 #line 1428 "parser.tab.c"
     break;
 
-  case 45: /* assignment: ID ASSIGN expression  */
+  case 44: /* assignment: ID ASSIGN expression  */
 #line 144 "parser.y"
                           {
         printf("Assignment to %s\n", (yyvsp[-2].sval));
@@ -1435,7 +1435,7 @@ yyreduce:
 #line 1436 "parser.tab.c"
     break;
 
-  case 46: /* if_statement: IF LPAREN expression RPAREN statement  */
+  case 45: /* if_statement: IF LPAREN expression RPAREN statement  */
 #line 150 "parser.y"
                                                                 {
         printf("If statement\n");
@@ -1443,7 +1443,7 @@ yyreduce:
 #line 1444 "parser.tab.c"
     break;
 
-  case 47: /* if_statement: IF LPAREN expression RPAREN statement ELSE statement  */
+  case 46: /* if_statement: IF LPAREN expression RPAREN statement ELSE statement  */
 #line 153 "parser.y"
                                                            {
         printf("If-else statement\n");
@@ -1452,39 +1452,39 @@ yyreduce:
     break;
 
   case 48: /* loop_statement: BREAK SEMICOLON  */
-#line 159 "parser.y"
-                    {
+#line 162 "parser.y"
+                      {
         printf("Break statement\n");
     }
 #line 1460 "parser.tab.c"
     break;
 
   case 49: /* loop_statement: CONTINUE SEMICOLON  */
-#line 162 "parser.y"
+#line 165 "parser.y"
                          {
         printf("Continue statement\n");
     }
 #line 1468 "parser.tab.c"
     break;
 
-  case 50: /* while_loop: WHILE LPAREN expression RPAREN statement  */
-#line 168 "parser.y"
-                                             {
+  case 50: /* while_loop: WHILE LPAREN expression RPAREN loop_statement  */
+#line 171 "parser.y"
+                                                  {
         printf("While loop\n");
     }
 #line 1476 "parser.tab.c"
     break;
 
-  case 51: /* do_while_loop: DO statement WHILE LPAREN expression RPAREN SEMICOLON  */
-#line 175 "parser.y"
-                                                          {
+  case 51: /* do_while_loop: DO loop_statement WHILE LPAREN expression RPAREN SEMICOLON  */
+#line 178 "parser.y"
+                                                               {
         printf("Do-while loop\n");
     }
 #line 1484 "parser.tab.c"
     break;
 
   case 52: /* for_loop: FOR LPAREN for_init expression SEMICOLON for_update RPAREN statement  */
-#line 181 "parser.y"
+#line 184 "parser.y"
                                                                          {
         printf("For loop\n");
     }
@@ -1492,7 +1492,7 @@ yyreduce:
     break;
 
   case 56: /* switch_statement: SWITCH LPAREN expression RPAREN LBRACE case_list RBRACE  */
-#line 196 "parser.y"
+#line 199 "parser.y"
                                                             {
         printf("Switch statement\n");
     }
@@ -1500,7 +1500,7 @@ yyreduce:
     break;
 
   case 59: /* case: CASE INT COLON statements  */
-#line 207 "parser.y"
+#line 210 "parser.y"
                               {
         printf("Case: %d\n", (yyvsp[-2].ival));
     }
@@ -1508,7 +1508,7 @@ yyreduce:
     break;
 
   case 60: /* case: DEFAULT COLON statements  */
-#line 210 "parser.y"
+#line 213 "parser.y"
                                {
         printf("Default case\n");
     }
@@ -1516,151 +1516,151 @@ yyreduce:
     break;
 
   case 62: /* or_expr: or_expr OR and_expr  */
-#line 220 "parser.y"
+#line 223 "parser.y"
                              { (yyval.ival) = (yyvsp[-2].ival) || (yyvsp[0].ival); printf("Logical OR\n"); }
 #line 1522 "parser.tab.c"
     break;
 
   case 64: /* and_expr: and_expr AND equality_expr  */
-#line 225 "parser.y"
+#line 228 "parser.y"
                                     { (yyval.ival) = (yyvsp[-2].ival) && (yyvsp[0].ival); printf("Logical AND\n"); }
 #line 1528 "parser.tab.c"
     break;
 
   case 66: /* equality_expr: equality_expr EQ relational_expr  */
-#line 230 "parser.y"
+#line 233 "parser.y"
                                              { (yyval.ival) = (yyvsp[-2].ival) == (yyvsp[0].ival); printf("Equality\n"); }
 #line 1534 "parser.tab.c"
     break;
 
   case 67: /* equality_expr: equality_expr NEQ relational_expr  */
-#line 231 "parser.y"
+#line 234 "parser.y"
                                                 { (yyval.ival) = (yyvsp[-2].ival) != (yyvsp[0].ival); printf("Not Equal\n"); }
 #line 1540 "parser.tab.c"
     break;
 
   case 69: /* relational_expr: relational_expr LT additive_expr  */
-#line 236 "parser.y"
+#line 239 "parser.y"
                                                  { (yyval.ival) = (yyvsp[-2].ival) < (yyvsp[0].ival); printf("Less than\n"); }
 #line 1546 "parser.tab.c"
     break;
 
   case 70: /* relational_expr: relational_expr LE additive_expr  */
-#line 237 "parser.y"
+#line 240 "parser.y"
                                                    { (yyval.ival) = (yyvsp[-2].ival) <= (yyvsp[0].ival); printf("Less than or equal\n"); }
 #line 1552 "parser.tab.c"
     break;
 
   case 71: /* relational_expr: relational_expr GT additive_expr  */
-#line 238 "parser.y"
+#line 241 "parser.y"
                                                    { (yyval.ival) = (yyvsp[-2].ival) > (yyvsp[0].ival); printf("Greater than\n"); }
 #line 1558 "parser.tab.c"
     break;
 
   case 72: /* relational_expr: relational_expr GE additive_expr  */
-#line 239 "parser.y"
+#line 242 "parser.y"
                                                    { (yyval.ival) = (yyvsp[-2].ival) >= (yyvsp[0].ival); printf("Greater than or equal\n"); }
 #line 1564 "parser.tab.c"
     break;
 
   case 74: /* additive_expr: additive_expr ADD multiplicative_expr  */
-#line 244 "parser.y"
+#line 247 "parser.y"
                                                        { (yyval.ival) = (yyvsp[-2].ival) + (yyvsp[0].ival); printf("Addition\n"); }
 #line 1570 "parser.tab.c"
     break;
 
   case 75: /* additive_expr: additive_expr SUB multiplicative_expr  */
-#line 245 "parser.y"
+#line 248 "parser.y"
                                                          { (yyval.ival) = (yyvsp[-2].ival) - (yyvsp[0].ival); printf("Subtraction\n"); }
 #line 1576 "parser.tab.c"
     break;
 
   case 77: /* multiplicative_expr: multiplicative_expr MUL unary_expr  */
-#line 250 "parser.y"
+#line 253 "parser.y"
                                                     { (yyval.ival) = (yyvsp[-2].ival) * (yyvsp[0].ival); printf("Multiplication\n"); }
 #line 1582 "parser.tab.c"
     break;
 
   case 78: /* multiplicative_expr: multiplicative_expr DIV unary_expr  */
-#line 251 "parser.y"
+#line 254 "parser.y"
                                                       { (yyval.ival) = (yyvsp[-2].ival) / (yyvsp[0].ival); printf("Division\n"); }
 #line 1588 "parser.tab.c"
     break;
 
   case 79: /* multiplicative_expr: multiplicative_expr MOD unary_expr  */
-#line 252 "parser.y"
+#line 255 "parser.y"
                                                       { (yyval.ival) = (yyvsp[-2].ival) % (yyvsp[0].ival); printf("Modulo\n"); }
 #line 1594 "parser.tab.c"
     break;
 
   case 81: /* unary_expr: NOT unary_expr  */
-#line 257 "parser.y"
+#line 260 "parser.y"
                          { (yyval.ival) = !(yyvsp[0].ival); printf("Logical NOT\n"); }
 #line 1600 "parser.tab.c"
     break;
 
   case 82: /* unary_expr: primary_expr  */
-#line 258 "parser.y"
+#line 261 "parser.y"
                          { (yyval.ival) = (yyvsp[0].ival); }
 #line 1606 "parser.tab.c"
     break;
 
   case 83: /* primary_expr: INT  */
-#line 262 "parser.y"
+#line 265 "parser.y"
              { (yyval.ival) = (yyvsp[0].ival); printf("Primary int: %d\n", (yyvsp[0].ival)); }
 #line 1612 "parser.tab.c"
     break;
 
   case 84: /* primary_expr: FLOAT  */
-#line 263 "parser.y"
+#line 266 "parser.y"
              { (yyval.ival) = (int)(yyvsp[0].fval); printf("Primary float: %f\n", (yyvsp[0].fval)); }
 #line 1618 "parser.tab.c"
     break;
 
   case 85: /* primary_expr: DOUBLE  */
-#line 264 "parser.y"
+#line 267 "parser.y"
              { (yyval.ival) = (int)(yyvsp[0].fval); printf("Primary double: %f\n", (yyvsp[0].fval)); }
 #line 1624 "parser.tab.c"
     break;
 
   case 86: /* primary_expr: STRING  */
-#line 265 "parser.y"
+#line 268 "parser.y"
              { (yyval.ival) = 0; fprintf(stderr, "Warning: string in expression not supported\n"); }
 #line 1630 "parser.tab.c"
     break;
 
   case 87: /* primary_expr: CHAR  */
-#line 266 "parser.y"
+#line 269 "parser.y"
              { (yyval.ival) = (yyvsp[0].sval)[0]; printf("Primary char: %c\n", (yyvsp[0].sval)[0]); }
 #line 1636 "parser.tab.c"
     break;
 
   case 88: /* primary_expr: BOOL  */
-#line 267 "parser.y"
+#line 270 "parser.y"
              { (yyval.ival) = (yyvsp[0].bval) ? 1 : 0; printf("Primary bool: %s\n", (yyvsp[0].bval) ? "true" : "false"); }
 #line 1642 "parser.tab.c"
     break;
 
   case 89: /* primary_expr: ID  */
-#line 268 "parser.y"
+#line 271 "parser.y"
              { (yyval.ival) = sym[(yyvsp[0].sval)[0] - 'a']; printf("Primary ID: %s = %d\n", (yyvsp[0].sval), (yyval.ival)); }
 #line 1648 "parser.tab.c"
     break;
 
   case 90: /* primary_expr: LPAREN expression RPAREN  */
-#line 269 "parser.y"
+#line 272 "parser.y"
                                { (yyval.ival) = (yyvsp[-1].ival); }
 #line 1654 "parser.tab.c"
     break;
 
   case 91: /* primary_expr: function_call  */
-#line 270 "parser.y"
+#line 273 "parser.y"
                     { (yyval.ival) = 0; fprintf(stderr, "Function call handling not implemented\n"); }
 #line 1660 "parser.tab.c"
     break;
 
   case 92: /* function_call: ID LPAREN argument_list RPAREN  */
-#line 274 "parser.y"
+#line 277 "parser.y"
                                              {
                   printf("Function call to: %s\n", (yyvsp[-3].sval));
               }
@@ -1861,7 +1861,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 285 "parser.y"
+#line 288 "parser.y"
 
 
 int main() {
