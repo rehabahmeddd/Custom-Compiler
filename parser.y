@@ -197,6 +197,9 @@ jump_statement:
     RETURN expression SEMICOLON {
         printf("Return statement\n");
     }
+    |RETURN SEMICOLON {
+        printf("Return void\n");
+    }
     | BREAK SEMICOLON {
         printf("Break statement\n");
     }
