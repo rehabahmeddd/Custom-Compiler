@@ -25,7 +25,10 @@ INT         {DIGIT}+
 FLOAT       {DIGIT}+\.{DIGIT}+ 
 WHITESPACE  [ \t]+
 NEWLINE     \n
+CARRIAGERET  [\r]+
 COMMENT     \/\/.*
+MULTILINE_COMMENT \/[*]([^*]|[*][^/])*[*]\/
+DOUBLE      {DIGIT}+\.{DIGIT}+[eE][+-]?{DIGIT}+
 
 %%
 
@@ -94,31 +97,35 @@ COMMENT     \/\/.*
               return FLOAT; 
             }
 
-{DIGIT}+\.{DIGIT}+[eE][+-]?{DIGIT}+ { 
+{DOUBLE}    { 
               yylval.fval = atof(yytext); 
               return DOUBLE; 
             }
 
+ /* strings */
 \"[^\"]*\"  { 
               yylval.sval = strdup(yytext); 
               return STRING; 
             }
-
+ /* characters */
 \'[^\']\'   { 
               yylval.sval = strdup(yytext); 
               return CHAR; 
             }
 
+
 {WHITESPACE} { /* Ignore whitespace */ }
-\r { /* Ignore carriage return */ }
+{CARRIAGERET} { /* Ignore spaces and tabs and carriage return */ }
 {NEWLINE}    { line_number++; }
 {COMMENT}    { /* Ignore comments */ }
+{MULTILINE_COMMENT} { /* Ignore multiline comments */ }
 
 .           { 
               char error_msg[100];
-              sprintf(error_msg, "Unrecognized character: %s at line %d", yytext, line_number);
+              sprintf(error_msg, " Unrecognized character: %s at line %d", yytext, line_number);
               yyerror(error_msg); 
             }
+
 {DIGIT}({LETTER}|{DIGIT})*  { 
             char error_msg[100];
             sprintf(error_msg, "Invalid identifier: %s at line %d", yytext, line_number);
