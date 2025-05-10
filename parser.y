@@ -3,13 +3,19 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include "symbol_table.h"
 
-int sym[26]; 
+Scope* global_scope = NULL;
+Scope* current_scope = NULL;
+int is_function_body = 0;
+
 int yylex();
 void yyerror(const char *s) {
     fprintf(stderr, "Syntax Error: %s\n", s);
 }
 %}
+
+
 
 %union {
     int ival;
@@ -33,13 +39,14 @@ void yyerror(const char *s) {
 
 %token INT_TYPE FLOAT_TYPE DOUBLE_TYPE STRING_TYPE CHAR_TYPE VOID_TYPE BOOL_TYPE 
 
-%token ASSIGN // =
-%token ADD SUB MUL DIV MOD // + - * / %
-%token LT GT EQ NEQ LE GE // < > == != <= >=
-%token AND OR NOT          // && || !
+%token ASSIGN
+%token ADD SUB MUL DIV MOD
+%token LT GT EQ NEQ LE GE
+%token AND OR NOT
 
 %token LPAREN RPAREN LBRACE RBRACE SEMICOLON COMMA COLON
 
+%type <ival> type_specifier
 %type <ival> expression additive_expression multiplicative_expr relational_expression equality_expression logical_and_expression logical_or_expression unary_expr primary_expr assignment_expression postfix_expression function_call
 
 %%
@@ -60,29 +67,47 @@ external_declaration:
 
 global_declaration:
     type_specifier ID SEMICOLON {
+        insert_symbol(current_scope, $2, $1, KIND_VAR, false);
         printf("Global Declaration: %s\n", $2);
     }
     | type_specifier ID ASSIGN expression SEMICOLON {
+        Symbol* sym = insert_symbol(current_scope, $2, $1, KIND_VAR, false);
+        set_initialized($2);
+        set_value($2, $1, &$4);
         printf("Global Declaration with assignment: %s\n", $2);
     }
     | CONST type_specifier ID ASSIGN expression SEMICOLON {
+        Symbol* sym = insert_symbol(current_scope, $3, $2, KIND_VAR, true);
+        set_initialized($3);
+        set_value($3, $2, &$5);
         printf("Global Constant declaration: %s\n", $3);
     }
 ;
 
 type_specifier:
-    INT_TYPE
-    | FLOAT_TYPE
-    | DOUBLE_TYPE
-    | STRING_TYPE
-    | CHAR_TYPE
-    | BOOL_TYPE
-    | VOID_TYPE
+    INT_TYPE { $$ = TYPE_INT; }
+    | FLOAT_TYPE { $$ = TYPE_FLOAT; }
+    | DOUBLE_TYPE { $$ = TYPE_DOUBLE; }
+    | STRING_TYPE { $$ = TYPE_STRING; }
+    | CHAR_TYPE { $$ = TYPE_CHAR; }
+    | BOOL_TYPE { $$ = TYPE_BOOL; }
+    | VOID_TYPE { $$ = TYPE_VOID; }
 ;
 
 function_definition:
-    type_specifier ID LPAREN parameters RPAREN compound_statement {
+    type_specifier ID LPAREN parameters RPAREN  /* Part 1: Before compound_statement */
+    {
+        // Insert function into global symbol table
+        insert_symbol(current_scope, $2, $1, KIND_FUNCTION, false);
         printf("Function: %s\n", $2);
+
+        // Set flag and create scope for parameters/body
+        is_function_body = 1;            // Mark as function body
+        current_scope = create_scope(current_scope);    // New scope for parameters + body
+    }
+    compound_statement                   /* Part 2: Process body */
+    {
+        is_function_body = 0;            // Reset flag after function body
     }
 ;
 
@@ -98,12 +123,27 @@ parameter_list:
 
 parameter:
     type_specifier ID {
-        printf("Parameter: type and name = [type], %s\n", $2);
+        insert_symbol(current_scope, $2, $1, KIND_PARAMETER, false);
+        printf("Parameter: %s\n", $2);
     }
 ;
 
 compound_statement:
-    LBRACE block_item_list RBRACE
+    LBRACE 
+    {
+        if (!is_function_body) {
+            // Only create a new scope for non-function blocks (loops/if)
+            current_scope = create_scope(current_scope);
+        }
+    }
+    block_item_list 
+    RBRACE 
+    {
+        if (!is_function_body) {
+            // Only leave scope for non-function blocks
+            leave_scope(&current_scope);
+        }
+    }
 ;
 
 block_item_list:
@@ -118,12 +158,19 @@ block_item:
 
 declaration:
     type_specifier ID SEMICOLON {
+        insert_symbol(current_scope, $2, $1, KIND_VAR, false);
         printf("Local Declaration: %s\n", $2);
     }
     | type_specifier ID ASSIGN expression SEMICOLON {
+        insert_symbol(current_scope, $2, $1, KIND_VAR, false);
+        set_value($2, $1, &$4);
+        set_initialized($2);
         printf("Local Declaration with assignment: %s\n", $2);
     }
     | CONST type_specifier ID ASSIGN expression SEMICOLON {
+        insert_symbol(current_scope, $3, $2, KIND_VAR, true);
+        set_initialized($3);
+        set_value($3, $2, &$5);
         printf("Local Constant declaration: %s\n", $3);
     }
 ;
@@ -143,7 +190,7 @@ expression_statement:
 
 selection_statement:
     IF LPAREN expression RPAREN statement %prec LOWER_THAN_ELSE {
-        printf("If statement\n");
+        printf("If statement\n"); 
     }
     | IF LPAREN expression RPAREN statement ELSE statement {
         printf("If-else statement\n");
@@ -179,9 +226,8 @@ iteration_statement:
     | DO statement WHILE LPAREN expression RPAREN SEMICOLON {
         printf("Do-while loop\n");
     }
-    | FOR LPAREN for_clause RPAREN statement {
-        printf("For loop\n");
-    }
+    | FOR LPAREN { is_function_body = 1; current_scope = create_scope(current_scope);}
+        for_clause RPAREN statement { is_function_body = 0;  printf("For loop\n"); }
 ;
 
 for_clause:
@@ -190,14 +236,14 @@ for_clause:
 
 for_init_statement:
     expression_statement
-    | declaration
+    | declaration 
 ;
 
 jump_statement:
     RETURN expression SEMICOLON {
         printf("Return statement\n");
     }
-    |RETURN SEMICOLON {
+    | RETURN SEMICOLON {
         printf("Return void\n");
     }
     | BREAK SEMICOLON {
@@ -214,7 +260,16 @@ expression:
 
 assignment_expression:
     logical_or_expression
-    | ID ASSIGN assignment_expression {printf("Assignment to %s\n", $1);}
+    | ID ASSIGN assignment_expression {
+        Symbol* sym = lookup_symbol(current_scope, $1);
+        if (sym == NULL) {
+            fprintf(stderr, "Semantic Error: Undeclared variable %s\n", $1);
+        } else {
+            set_initialized($1);
+            set_value($1, sym->type, &$3);
+        }
+        printf("Assignment to %s\n", $1);
+    }
 ;
 
 logical_or_expression:
@@ -265,22 +320,34 @@ postfix_expression:
 ;
 
 primary_expr:
-    ID { printf("Primary ID: %s = %d\n", $1, $$); }
-    | INT { printf("Primary int: %d\n", $1);}
-    | FLOAT { printf("Primary float: %f\n", $1); }
-    | DOUBLE { printf("Primary double: %f\n", $1); }
-    | STRING { printf("Primary string: %s\n",$1); }
-    | CHAR { printf("Primary char: %c\n", $1[1]); }
-    | BOOL { printf("Primary bool: %s\n", $1 ? "true" : "false"); }
+    ID {
+        Symbol* sym = lookup_symbol(current_scope, $1);
+        if (sym == NULL)
+         { fprintf(stderr, "Semantic Error: Use of undeclared variable %s\n", $1);}
+        else if(!sym->initialized)
+        {fprintf(stderr, "Semantic Error: Use of uninitialized variable %s\n", $1);}
+        else 
+        {$$ = sym && sym->value ? *((int*)sym->value) : 0;  // Assuming TYPE_INT for now
+        printf("Primary ID: %s\n", $1);}}
+    | INT { $$ = $1; printf("Primary int: %d\n", $1); }
+    | FLOAT { $$ = (int)$1; printf("Primary float: %f\n", $1); } // cast needed for int-only $$ now
+    | DOUBLE { $$ = (int)$1; printf("Primary double: %f\n", $1); }
+    | STRING { $$ = 0; printf("Primary string: %s\n", $1); }
+    | CHAR { $$ = $1[1]; printf("Primary char: %c\n", $1[1]); }
+    | BOOL { $$ = $1; printf("Primary bool: %s\n", $1 ? "true" : "false"); }
     | LPAREN expression RPAREN { $$ = $2; }
 ;
 
+
 function_call:
     ID LPAREN argument_list RPAREN {
+        Symbol* sym = lookup_symbol(current_scope, $1);
+        if (!sym || sym->kind != KIND_FUNCTION) {
+            fprintf(stderr, "Semantic Error: Undefined function %s\n", $1);
+        }
         printf("Function call to: %s\n", $1);
     }
 ;
-
 
 argument_list:
     assignment_expression
@@ -288,9 +355,10 @@ argument_list:
     | /* empty */
 ;
 
-
 %%
 
 int main() {
+    global_scope = create_scope(NULL);
+    current_scope = global_scope;
     return yyparse();
 }

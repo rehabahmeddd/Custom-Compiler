@@ -6,6 +6,7 @@ BISON   = bison
 # Source files
 LEX_SRC     = lexer.l
 YACC_SRC    = parser.y
+SYMTAB_SRC  = symbol_table.c
 
 # Generated files
 LEX_C       = lex.yy.c
@@ -24,11 +25,11 @@ $(LEX_C): $(LEX_SRC)
 
 # Generate parser files
 $(YACC_C): $(YACC_SRC)
-	$(BISON) $(YACC_SRC)
+	$(BISON) -d $(YACC_SRC)
 
 # Compile and link to create the executable
-$(OUTPUT): $(LEX_C) $(YACC_C)
-	$(CC) -o $(OUTPUT) $(LEX_C) $(YACC_C)
+$(OUTPUT): $(LEX_C) $(YACC_C) $(SYMTAB_SRC)
+	$(CC) -o $(OUTPUT) $(LEX_C) $(YACC_C) $(SYMTAB_SRC) -lfl
 
 # Clean generated and compiled files
 clean:
