@@ -55,13 +55,12 @@ void leave_scope(Scope** current_scope);
 
 // Symbol table operations
 Symbol* insert_symbol(Scope* scope, const char* name, DataType type, VarKind kind, bool constant);
-Symbol* lookup_symbol(Scope* scope, const char* name); // Lookup in current + parent scopes
-Symbol* find_symbol(const char* name);                 // Global lookup
-bool is_declared(const char* name);
-void set_initialized(const char* name);
+Symbol* lookup_symbol(Scope* scope, const char* name); // Lookup in current + parent scopes                // Global lookup
+bool is_declared(Scope* current_scope,const char* name);
+void set_initialized(Scope* current_scope,const char* name);
 
 // Type-safe setter with semantic check
-void set_value(const char* name, DataType type, void* value);
+void set_value(Scope* current_scope,const char* name, DataType type, void* value);
 
 // Utility
 void print_scope(Scope* scope, int depth);
@@ -69,4 +68,6 @@ void print_scope(Scope* scope, int depth);
 //Free
 void free_symbol(Symbol* sym);
 void free_scope(Scope* scope);
+const char* get_symbol_name(Symbol* sym);
+bool is_initialized(Scope* current_scope,const char* name);
 #endif

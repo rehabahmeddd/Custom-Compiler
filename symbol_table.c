@@ -4,7 +4,7 @@
 #include "symbol_table.h"
 
 static Scope* global_scope = NULL;
-static Scope* current_scope = NULL;
+
 
 Scope* create_scope(Scope* parent) {
     Scope* scope = (Scope*)malloc(sizeof(Scope));
@@ -65,6 +65,7 @@ Symbol* lookup_symbol(Scope* scope, const char* name) {
         Symbol* sym = scope->symbols;
         while (sym) {
             if (strcmp(sym->name, name) == 0) {
+                // fprintf(stderr, "Found symbol '%s' in scope (pointer: %p).\n", name, (void*)sym);
                 return sym;
             }
             sym = sym->next;
@@ -74,20 +75,22 @@ Symbol* lookup_symbol(Scope* scope, const char* name) {
     return NULL;
 }
 
-Symbol* find_symbol(const char* name) {
-    return lookup_symbol(current_scope, name);
+
+
+bool is_declared(Scope* current_scope,const char* name) {
+    return lookup_symbol(current_scope,name) != NULL;
 }
 
-bool is_declared(const char* name) {
-    return find_symbol(name) != NULL;
-}
+void set_initialized(Scope* current_scope, const char* name) {
+    Symbol* sym = lookup_symbol(current_scope, name);
+    //print sym the ptr
+   // printf("Symbol pointer: %p\n", (void*)sym);
 
-void set_initialized(const char* name) {
-    Symbol* sym = find_symbol(name);
     if (sym) {
         sym->initialized = true;
+        printf("Variable '%s' initialized.\n", name);
     }
-    printf("Variable '%s' initialized.\n", name);
+ 
 }
 /*void set_value(const char* name, VarType type, void* value) {
     Symbol* sym = find_symbol(name);
@@ -170,8 +173,8 @@ void set_value(const char* name, DataType type, void* value) {
     }
 }*/
 
-void set_value(const char* name, DataType type, void* value) {
-    Symbol* sym = lookup_symbol(NULL, name); // Use current_scope instead of NULL if in context
+void set_value(Scope* current_scope,const char* name, DataType type, void* value) {
+    Symbol* sym = lookup_symbol(current_scope, name); // Use current_scope instead of NULL if in context
     if (!sym) return;
     if (sym->type != type) {
         fprintf(stderr, "Type mismatch when assigning to %s\n", name);
@@ -219,15 +222,9 @@ void print_scope(Scope* scope, int depth) {
     }
 }
 
-// Optional init
-void init_symbol_table() {
-    global_scope = create_scope(NULL);
-    current_scope = global_scope;
-}
 
-Scope* get_current_scope() {
-    return current_scope;
-}
+
+
 
 Scope* get_global_scope() {
     return global_scope;
@@ -254,3 +251,16 @@ void free_scope(Scope* scope) {
     free(scope);
 }
 
+//get symbol name 
+ const char* get_symbol_name(Symbol* sym) {
+    if (!sym) return NULL;
+    return sym->name;
+}
+//intilized getter
+bool is_initialized(Scope* current_scope, const char* name) {
+    Symbol* sym = lookup_symbol(current_scope,name);
+    if (sym) {
+        return sym->initialized;
+    }
+    return false;
+}

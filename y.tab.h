@@ -165,14 +165,15 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 13 "parser.y"
+#line 55 "parser.y"
 
     int ival;
     float fval;
     char* sval;
     bool  bval;
+    int dtype;  /* For DataType enum */
 
-#line 176 "y.tab.h"
+#line 177 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
