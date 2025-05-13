@@ -2,7 +2,9 @@ int x = 9;
 int main()
 {
     int z = 3;
-    int y = z + 1;
+    int e= 7;
+    int y ;
+    y = z + e;
 }
 
 

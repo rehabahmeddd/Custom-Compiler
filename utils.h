@@ -20,8 +20,11 @@ char* double_to_str(double value);
 // Convert a boolean to a string
 char* bool_to_str(int value);
 
-DataType infer_expr_type(char* expr);
+DataType infer_expr_type(Scope* current_scope, char* expr);
 
 extern const char* dataTypeName[];
+
+bool areTypesCompatibleForOp(DataType left, DataType right, const char* op);
+
 
 #endif /* UTILS_H */

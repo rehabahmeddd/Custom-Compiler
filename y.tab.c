@@ -767,11 +767,11 @@ static const yytype_int16 yyrline[] =
      188,   192,   196,   208,   216,   217,   218,   219,   220,   224,
      225,   229,   232,   235,   241,   242,   246,   249,   255,   256,
      260,   263,   266,   266,   271,   276,   277,   281,   284,   287,
-     290,   296,   300,   301,   325,   326,   332,   333,   339,   340,
-     343,   349,   350,   353,   356,   359,   365,   366,   369,   375,
-     376,   379,   382,   388,   389,   392,   398,   399,   403,   420,
-     425,   430,   435,   439,   443,   447,   451,   476,   477,   481,
-     485
+     290,   296,   300,   301,   325,   326,   339,   340,   353,   354,
+     364,   377,   378,   388,   398,   408,   421,   422,   432,   445,
+     446,   456,   466,   479,   480,   489,   501,   502,   506,   523,
+     528,   533,   538,   542,   546,   550,   554,   579,   580,   584,
+     588
 };
 #endif
 
@@ -1488,9 +1488,9 @@ yyreduce:
         set_initialized(current_scope,(yyvsp[-3].sval));
         
         Symbol* sym = lookup_symbol(current_scope, (yyvsp[-3].sval));
-        if (sym && sym->type != infer_expr_type((yyvsp[-1].sval))) {
+        if (sym && sym->type != infer_expr_type(current_scope,(yyvsp[-1].sval))) {
             fprintf(stderr, "Semantic Error at line %d: Type mismatch in declaration of '%s'. Expected %s but got %s.\n",
-                line_number, (yyvsp[-3].sval), dataTypeName[sym->type], dataTypeName[infer_expr_type((yyvsp[-1].sval))]);
+                line_number, (yyvsp[-3].sval), dataTypeName[sym->type], dataTypeName[infer_expr_type(current_scope,(yyvsp[-1].sval))]);
             exit(1);
         }
         printf("Global Declaration with assignment: %s\n", (yyvsp[-3].sval));
@@ -1635,9 +1635,9 @@ yyreduce:
         set_initialized(current_scope,(yyvsp[-3].sval));
 
         Symbol* sym = lookup_symbol(current_scope, (yyvsp[-3].sval));
-        if (sym && sym->type != infer_expr_type((yyvsp[-1].sval))) {
+        if (sym && sym->type != infer_expr_type(current_scope,(yyvsp[-1].sval))) {
             fprintf(stderr, "Semantic Error line %d: Type mismatch in declaration of '%s'. Expected %s but got %s.\n",
-                line_number, (yyvsp[-3].sval), dataTypeName[sym->type], dataTypeName[infer_expr_type((yyvsp[-1].sval))]);
+                line_number, (yyvsp[-3].sval), dataTypeName[sym->type], dataTypeName[infer_expr_type(current_scope,(yyvsp[-1].sval))]);
             exit(1);
         }
         printf("Local Declaration with assignment: %s\n", (yyvsp[-3].sval));
@@ -1781,9 +1781,9 @@ yyreduce:
             set_initialized(current_scope,(yyvsp[-2].sval));
             sym->is_used = true;
 
-            if (sym->type != infer_expr_type((yyvsp[0].sval))) {
+            if (sym->type != infer_expr_type(current_scope,(yyvsp[0].sval))) {
             fprintf(stderr, "Semantic Error line %d: Type mismatch in assignment to '%s'. Expected %s but got %s.\n",
-                line_number, (yyvsp[-2].sval), dataTypeName[sym->type], dataTypeName[infer_expr_type((yyvsp[0].sval))]);
+                line_number, (yyvsp[-2].sval), dataTypeName[sym->type], dataTypeName[infer_expr_type(current_scope,(yyvsp[0].sval))]);
                 exit(1);
             }
             printf("Assignment to %s\n", (yyvsp[-2].sval));
@@ -1802,173 +1802,276 @@ yyreduce:
   case 65: /* logical_or_expression: logical_or_expression OR logical_and_expression  */
 #line 326 "parser.y"
                                                       { 
+        DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sval));
+        DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sval));
+        if (!areTypesCompatibleForOp(leftType, rightType, "||")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for logical or: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Logical OR\n"); 
     }
-#line 1808 "y.tab.c"
+#line 1815 "y.tab.c"
     break;
 
   case 66: /* logical_and_expression: equality_expression  */
-#line 332 "parser.y"
+#line 339 "parser.y"
                         { (yyval.sval) = (yyvsp[0].sval); }
-#line 1814 "y.tab.c"
+#line 1821 "y.tab.c"
     break;
 
   case 67: /* logical_and_expression: logical_and_expression AND equality_expression  */
-#line 333 "parser.y"
-                                                     { 
-        printf("Logical AND\n"); 
-    }
-#line 1822 "y.tab.c"
-    break;
-
-  case 68: /* equality_expression: relational_expression  */
-#line 339 "parser.y"
-                          { (yyval.sval) = (yyvsp[0].sval); }
-#line 1828 "y.tab.c"
-    break;
-
-  case 69: /* equality_expression: equality_expression EQ relational_expression  */
 #line 340 "parser.y"
-                                                   { 
-        printf("Equality\n");
+                                                     { 
+        DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sval));
+        DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sval));
+        if (!areTypesCompatibleForOp(leftType, rightType, "&&")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for logical and: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
+        printf("Logical AND\n"); 
     }
 #line 1836 "y.tab.c"
     break;
 
+  case 68: /* equality_expression: relational_expression  */
+#line 353 "parser.y"
+                          { (yyval.sval) = (yyvsp[0].sval); }
+#line 1842 "y.tab.c"
+    break;
+
+  case 69: /* equality_expression: equality_expression EQ relational_expression  */
+#line 354 "parser.y"
+                                                   { 
+        DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sval));
+        DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sval));
+        if (!areTypesCompatibleForOp(leftType, rightType, "==")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for equal: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
+        printf("Equality\n");
+    }
+#line 1857 "y.tab.c"
+    break;
+
   case 70: /* equality_expression: equality_expression NEQ relational_expression  */
-#line 343 "parser.y"
+#line 364 "parser.y"
                                                     {
+        DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sval));
+        DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sval));
+        if (!areTypesCompatibleForOp(leftType, rightType, "!=")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for not equal: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Not Equal\n");
     }
-#line 1844 "y.tab.c"
+#line 1872 "y.tab.c"
     break;
 
   case 71: /* relational_expression: additive_expression  */
-#line 349 "parser.y"
+#line 377 "parser.y"
                         { (yyval.sval) = (yyvsp[0].sval); }
-#line 1850 "y.tab.c"
+#line 1878 "y.tab.c"
     break;
 
   case 72: /* relational_expression: relational_expression LT additive_expression  */
-#line 350 "parser.y"
+#line 378 "parser.y"
                                                    { 
+        DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sval));
+        DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sval));
+        if (!areTypesCompatibleForOp(leftType, rightType, "<")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for less than: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Less than\n"); 
     }
-#line 1858 "y.tab.c"
+#line 1893 "y.tab.c"
     break;
 
   case 73: /* relational_expression: relational_expression GT additive_expression  */
-#line 353 "parser.y"
+#line 388 "parser.y"
                                                    { 
+        DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sval));
+        DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sval));
+        if (!areTypesCompatibleForOp(leftType, rightType, ">")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for greater than: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Greater than\n"); 
     }
-#line 1866 "y.tab.c"
+#line 1908 "y.tab.c"
     break;
 
   case 74: /* relational_expression: relational_expression LE additive_expression  */
-#line 356 "parser.y"
+#line 398 "parser.y"
                                                    { 
+        DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sval));
+        DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sval));
+        if (!areTypesCompatibleForOp(leftType, rightType, "<=")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for less than or equal: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Less than or equal\n"); 
     }
-#line 1874 "y.tab.c"
+#line 1923 "y.tab.c"
     break;
 
   case 75: /* relational_expression: relational_expression GE additive_expression  */
-#line 359 "parser.y"
+#line 408 "parser.y"
                                                    { 
+        DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sval));
+        DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sval));
+        if (!areTypesCompatibleForOp(leftType, rightType, ">=")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for greater than or equal: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Greater than or equal\n"); 
     }
-#line 1882 "y.tab.c"
+#line 1938 "y.tab.c"
     break;
 
   case 76: /* additive_expression: multiplicative_expr  */
-#line 365 "parser.y"
+#line 421 "parser.y"
                         { (yyval.sval) = (yyvsp[0].sval); }
-#line 1888 "y.tab.c"
+#line 1944 "y.tab.c"
     break;
 
   case 77: /* additive_expression: additive_expression ADD multiplicative_expr  */
-#line 366 "parser.y"
+#line 422 "parser.y"
                                                   { 
+        DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sval));
+        DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sval));
+        if (!areTypesCompatibleForOp(leftType, rightType, "+")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for addition: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Addition\n"); 
     }
-#line 1896 "y.tab.c"
+#line 1959 "y.tab.c"
     break;
 
   case 78: /* additive_expression: additive_expression SUB multiplicative_expr  */
-#line 369 "parser.y"
+#line 432 "parser.y"
                                                   { 
+        DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sval));
+        DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sval));
+        if (!areTypesCompatibleForOp(leftType, rightType, "-")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for subtraction: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Subtraction\n"); 
     }
-#line 1904 "y.tab.c"
+#line 1974 "y.tab.c"
     break;
 
   case 79: /* multiplicative_expr: unary_expr  */
-#line 375 "parser.y"
+#line 445 "parser.y"
                { (yyval.sval) = (yyvsp[0].sval); }
-#line 1910 "y.tab.c"
+#line 1980 "y.tab.c"
     break;
 
   case 80: /* multiplicative_expr: multiplicative_expr MUL unary_expr  */
-#line 376 "parser.y"
+#line 446 "parser.y"
                                          { 
+        DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sval));
+        DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sval));
+        if (!areTypesCompatibleForOp(leftType, rightType, "*")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for multiplication: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Multiplication\n"); 
     }
-#line 1918 "y.tab.c"
+#line 1995 "y.tab.c"
     break;
 
   case 81: /* multiplicative_expr: multiplicative_expr DIV unary_expr  */
-#line 379 "parser.y"
+#line 456 "parser.y"
                                          { 
+        DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sval));
+        DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sval));
+        if (!areTypesCompatibleForOp(leftType, rightType, "/")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for division: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Division\n"); 
     }
-#line 1926 "y.tab.c"
+#line 2010 "y.tab.c"
     break;
 
   case 82: /* multiplicative_expr: multiplicative_expr MOD unary_expr  */
-#line 382 "parser.y"
+#line 466 "parser.y"
                                          { 
+        DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sval));
+        DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sval));
+        if (!areTypesCompatibleForOp(leftType, rightType, "%")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for modulus: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Modulo\n"); 
     }
-#line 1934 "y.tab.c"
+#line 2025 "y.tab.c"
     break;
 
   case 83: /* unary_expr: postfix_expression  */
-#line 388 "parser.y"
+#line 479 "parser.y"
                        { (yyval.sval) = (yyvsp[0].sval); }
-#line 1940 "y.tab.c"
+#line 2031 "y.tab.c"
     break;
 
   case 84: /* unary_expr: NOT unary_expr  */
-#line 389 "parser.y"
+#line 480 "parser.y"
                      { 
+        DataType leftType = infer_expr_type(current_scope,(yyvsp[0].sval));
+        if (!areTypesCompatibleForOp(leftType, TYPE_BOOL, "!")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for logical not: %s\n",
+                line_number, dataTypeName[leftType]);
+            exit(1);
+        }
         printf("Logical NOT\n"); 
     }
-#line 1948 "y.tab.c"
+#line 2045 "y.tab.c"
     break;
 
   case 85: /* unary_expr: SUB unary_expr  */
-#line 392 "parser.y"
+#line 489 "parser.y"
                      { 
+        DataType leftType = infer_expr_type(current_scope,(yyvsp[0].sval));
+        if (!areTypesCompatibleForOp(leftType, TYPE_INT, "-")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for unary minus: %s\n",
+                line_number, dataTypeName[leftType]);
+            exit(1);
+        }
         printf("Unary minus\n"); 
     }
-#line 1956 "y.tab.c"
+#line 2059 "y.tab.c"
     break;
 
   case 86: /* postfix_expression: primary_expr  */
-#line 398 "parser.y"
+#line 501 "parser.y"
                  { (yyval.sval) = (yyvsp[0].sval); }
-#line 1962 "y.tab.c"
+#line 2065 "y.tab.c"
     break;
 
   case 87: /* postfix_expression: function_call  */
-#line 399 "parser.y"
+#line 502 "parser.y"
                     { (yyval.sval) = (yyvsp[0].sval); }
-#line 1968 "y.tab.c"
+#line 2071 "y.tab.c"
     break;
 
   case 88: /* primary_expr: ID  */
-#line 403 "parser.y"
+#line 506 "parser.y"
        {
         Symbol* sym = lookup_symbol(current_scope, (yyvsp[0].sval));
         const char* name=get_symbol_name(sym);
@@ -1986,74 +2089,74 @@ yyreduce:
         (yyval.sval) = strdup((yyvsp[0].sval));
         printf("Primary ID: %s\n", (yyvsp[0].sval));
     }
-#line 1990 "y.tab.c"
+#line 2093 "y.tab.c"
     break;
 
   case 89: /* primary_expr: INT  */
-#line 420 "parser.y"
+#line 523 "parser.y"
           { 
         // Convert INT to string
         (yyval.sval) = int_to_str((yyvsp[0].ival));
         printf("Primary int: %d\n", (yyvsp[0].ival)); 
     }
-#line 2000 "y.tab.c"
+#line 2103 "y.tab.c"
     break;
 
   case 90: /* primary_expr: FLOAT  */
-#line 425 "parser.y"
+#line 528 "parser.y"
             { 
         // Convert FLOAT to string
         (yyval.sval) = float_to_str((yyvsp[0].fval));
         printf("Primary float: %f\n", (yyvsp[0].fval)); 
     }
-#line 2010 "y.tab.c"
+#line 2113 "y.tab.c"
     break;
 
   case 91: /* primary_expr: DOUBLE  */
-#line 430 "parser.y"
+#line 533 "parser.y"
              { 
         // Convert DOUBLE to string
         (yyval.sval) = double_to_str((yyvsp[0].fval));
         printf("Primary double: %f\n", (yyvsp[0].fval)); 
     }
-#line 2020 "y.tab.c"
+#line 2123 "y.tab.c"
     break;
 
   case 92: /* primary_expr: STRING  */
-#line 435 "parser.y"
+#line 538 "parser.y"
              { 
         (yyval.sval) = strdup((yyvsp[0].sval));
         printf("Primary string: %s\n", (yyvsp[0].sval)); 
     }
-#line 2029 "y.tab.c"
+#line 2132 "y.tab.c"
     break;
 
   case 93: /* primary_expr: CHAR  */
-#line 439 "parser.y"
+#line 542 "parser.y"
            { 
         (yyval.sval) = strdup((yyvsp[0].sval));
         printf("Primary char: %c\n", (yyvsp[0].sval)[1]); 
     }
-#line 2038 "y.tab.c"
+#line 2141 "y.tab.c"
     break;
 
   case 94: /* primary_expr: BOOL  */
-#line 443 "parser.y"
+#line 546 "parser.y"
            { 
         (yyval.sval) = bool_to_str((yyvsp[0].bval));
         printf("Primary bool: %s\n", (yyvsp[0].bval) ? "true" : "false"); 
     }
-#line 2047 "y.tab.c"
+#line 2150 "y.tab.c"
     break;
 
   case 95: /* primary_expr: LPAREN expression RPAREN  */
-#line 447 "parser.y"
+#line 550 "parser.y"
                                { (yyval.sval) = (yyvsp[-1].sval); }
-#line 2053 "y.tab.c"
+#line 2156 "y.tab.c"
     break;
 
   case 96: /* function_call: ID LPAREN argument_list RPAREN  */
-#line 451 "parser.y"
+#line 554 "parser.y"
                                    {
         Symbol* sym = lookup_symbol(current_scope, (yyvsp[-3].sval));
     if (!sym || sym->kind != KIND_FUNCTION) {
@@ -2076,41 +2179,41 @@ yyreduce:
     }
     printf("Function call to: %s\n", (yyvsp[-3].sval));
     }
-#line 2080 "y.tab.c"
+#line 2183 "y.tab.c"
     break;
 
   case 97: /* argument_list: argument_expr_list  */
-#line 476 "parser.y"
+#line 579 "parser.y"
                        { arg_count = (yyval.ival); }
-#line 2086 "y.tab.c"
+#line 2189 "y.tab.c"
     break;
 
   case 98: /* argument_list: %empty  */
-#line 477 "parser.y"
+#line 580 "parser.y"
                   { arg_count = 0; }
-#line 2092 "y.tab.c"
+#line 2195 "y.tab.c"
     break;
 
   case 99: /* argument_expr_list: argument_expr_list COMMA expression  */
-#line 481 "parser.y"
+#line 584 "parser.y"
                                         {
-        arg_types[(yyval.ival)++] = infer_expr_type((yyvsp[0].sval));
+        arg_types[(yyval.ival)++] = infer_expr_type(current_scope,(yyvsp[0].sval));
         (yyval.ival) = (yyval.ival);
     }
-#line 2101 "y.tab.c"
+#line 2204 "y.tab.c"
     break;
 
   case 100: /* argument_expr_list: expression  */
-#line 485 "parser.y"
+#line 588 "parser.y"
                  {
-        arg_types[0] = infer_expr_type((yyvsp[0].sval));
+        arg_types[0] = infer_expr_type(current_scope,(yyvsp[0].sval));
         (yyval.ival) = 1;
     }
-#line 2110 "y.tab.c"
+#line 2213 "y.tab.c"
     break;
 
 
-#line 2114 "y.tab.c"
+#line 2217 "y.tab.c"
 
       default: break;
     }
@@ -2303,7 +2406,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 492 "parser.y"
+#line 595 "parser.y"
 
 
 void warn_unused_vars(Scope* scope) {

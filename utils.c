@@ -43,7 +43,14 @@ char* bool_to_str(int value) {
     return strdup(value ? "true" : "false");
 }
 
-DataType infer_expr_type(char* expr) {
+DataType infer_expr_type(Scope* current_scope,char* expr) {
+    if (expr == NULL) return TYPE_VOID;
+
+    // Try to find it in the symbol table
+    Symbol* sym = lookup_symbol(current_scope, expr);
+    if (sym != NULL) {
+        return sym->type;
+    }
     // You should improve this based on how you encode constants or temporaries
     if (strchr(expr, '.') != NULL) return TYPE_FLOAT;
     if (strcmp(expr, "true") == 0 || strcmp(expr, "false") == 0) return TYPE_BOOL;
@@ -62,4 +69,32 @@ const char* dataTypeName[] = {
     "bool",
     "void"
 };
+
+
+
+bool areTypesCompatibleForOp(DataType left, DataType right, const char* op) {
+    if (strcmp(op, "+") == 0 || strcmp(op, "-") == 0 || strcmp(op, "*") == 0 || strcmp(op, "/") == 0) {
+        printf("Left: %d, Right: %d\n", left, right);
+        bool cond = (left == right) && (left == TYPE_INT || left == TYPE_FLOAT || left == TYPE_DOUBLE);
+        return cond;
+    }
+
+    if (strcmp(op, "%") == 0) {
+        return (left == TYPE_INT && right == TYPE_INT);
+    }
+
+    if (strcmp(op, "==") == 0 || strcmp(op, "!=") == 0 ||
+        strcmp(op, "<") == 0 || strcmp(op, "<=") == 0 ||
+        strcmp(op, ">") == 0 || strcmp(op, ">=") == 0) {
+        return left == right &&
+               (left == TYPE_INT || left == TYPE_FLOAT || left == TYPE_DOUBLE || left == TYPE_BOOL || left == TYPE_CHAR);
+    }
+
+    if (strcmp(op, "&&") == 0 || strcmp(op, "||") == 0 || strcmp(op, "!") == 0) {
+        return (left == TYPE_BOOL && right == TYPE_BOOL);
+    }
+
+    return false;
+}
+
 

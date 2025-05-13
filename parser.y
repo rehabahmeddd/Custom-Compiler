@@ -85,9 +85,9 @@ global_declaration:
         set_initialized(current_scope,$2);
         
         Symbol* sym = lookup_symbol(current_scope, $2);
-        if (sym && sym->type != infer_expr_type($4)) {
+        if (sym && sym->type != infer_expr_type(current_scope,$4)) {
             fprintf(stderr, "Semantic Error at line %d: Type mismatch in declaration of '%s'. Expected %s but got %s.\n",
-                line_number, $2, dataTypeName[sym->type], dataTypeName[infer_expr_type($4)]);
+                line_number, $2, dataTypeName[sym->type], dataTypeName[infer_expr_type(current_scope,$4)]);
             exit(1);
         }
         printf("Global Declaration with assignment: %s\n", $2);
@@ -198,9 +198,9 @@ declaration:
         set_initialized(current_scope,$2);
 
         Symbol* sym = lookup_symbol(current_scope, $2);
-        if (sym && sym->type != infer_expr_type($4)) {
+        if (sym && sym->type != infer_expr_type(current_scope,$4)) {
             fprintf(stderr, "Semantic Error line %d: Type mismatch in declaration of '%s'. Expected %s but got %s.\n",
-                line_number, $2, dataTypeName[sym->type], dataTypeName[infer_expr_type($4)]);
+                line_number, $2, dataTypeName[sym->type], dataTypeName[infer_expr_type(current_scope,$4)]);
             exit(1);
         }
         printf("Local Declaration with assignment: %s\n", $2);
@@ -310,9 +310,9 @@ assignment_expression:
             set_initialized(current_scope,$1);
             sym->is_used = true;
 
-            if (sym->type != infer_expr_type($3)) {
+            if (sym->type != infer_expr_type(current_scope,$3)) {
             fprintf(stderr, "Semantic Error line %d: Type mismatch in assignment to '%s'. Expected %s but got %s.\n",
-                line_number, $1, dataTypeName[sym->type], dataTypeName[infer_expr_type($3)]);
+                line_number, $1, dataTypeName[sym->type], dataTypeName[infer_expr_type(current_scope,$3)]);
                 exit(1);
             }
             printf("Assignment to %s\n", $1);
@@ -324,6 +324,13 @@ assignment_expression:
 logical_or_expression:
     logical_and_expression { $$ = $1; }
     | logical_or_expression OR logical_and_expression { 
+        DataType leftType = infer_expr_type(current_scope,$1);
+        DataType rightType = infer_expr_type(current_scope,$3);
+        if (!areTypesCompatibleForOp(leftType, rightType, "||")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for logical or: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Logical OR\n"); 
     }
 ;
@@ -331,6 +338,13 @@ logical_or_expression:
 logical_and_expression:
     equality_expression { $$ = $1; }
     | logical_and_expression AND equality_expression { 
+        DataType leftType = infer_expr_type(current_scope,$1);
+        DataType rightType = infer_expr_type(current_scope,$3);
+        if (!areTypesCompatibleForOp(leftType, rightType, "&&")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for logical and: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Logical AND\n"); 
     }
 ;
@@ -338,9 +352,23 @@ logical_and_expression:
 equality_expression:
     relational_expression { $$ = $1; }
     | equality_expression EQ relational_expression { 
+        DataType leftType = infer_expr_type(current_scope,$1);
+        DataType rightType = infer_expr_type(current_scope,$3);
+        if (!areTypesCompatibleForOp(leftType, rightType, "==")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for equal: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Equality\n");
     }
     | equality_expression NEQ relational_expression {
+        DataType leftType = infer_expr_type(current_scope,$1);
+        DataType rightType = infer_expr_type(current_scope,$3);
+        if (!areTypesCompatibleForOp(leftType, rightType, "!=")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for not equal: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Not Equal\n");
     }
 ;
@@ -348,15 +376,43 @@ equality_expression:
 relational_expression:
     additive_expression { $$ = $1; }
     | relational_expression LT additive_expression { 
+        DataType leftType = infer_expr_type(current_scope,$1);
+        DataType rightType = infer_expr_type(current_scope,$3);
+        if (!areTypesCompatibleForOp(leftType, rightType, "<")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for less than: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Less than\n"); 
     }
     | relational_expression GT additive_expression { 
+        DataType leftType = infer_expr_type(current_scope,$1);
+        DataType rightType = infer_expr_type(current_scope,$3);
+        if (!areTypesCompatibleForOp(leftType, rightType, ">")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for greater than: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Greater than\n"); 
     }
     | relational_expression LE additive_expression { 
+        DataType leftType = infer_expr_type(current_scope,$1);
+        DataType rightType = infer_expr_type(current_scope,$3);
+        if (!areTypesCompatibleForOp(leftType, rightType, "<=")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for less than or equal: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Less than or equal\n"); 
     }
     | relational_expression GE additive_expression { 
+        DataType leftType = infer_expr_type(current_scope,$1);
+        DataType rightType = infer_expr_type(current_scope,$3);
+        if (!areTypesCompatibleForOp(leftType, rightType, ">=")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for greater than or equal: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Greater than or equal\n"); 
     }
 ;
@@ -364,9 +420,23 @@ relational_expression:
 additive_expression:
     multiplicative_expr { $$ = $1; }
     | additive_expression ADD multiplicative_expr { 
+        DataType leftType = infer_expr_type(current_scope,$1);
+        DataType rightType = infer_expr_type(current_scope,$3);
+        if (!areTypesCompatibleForOp(leftType, rightType, "+")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for addition: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Addition\n"); 
     }
     | additive_expression SUB multiplicative_expr { 
+        DataType leftType = infer_expr_type(current_scope,$1);
+        DataType rightType = infer_expr_type(current_scope,$3);
+        if (!areTypesCompatibleForOp(leftType, rightType, "-")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for subtraction: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Subtraction\n"); 
     }
 ;
@@ -374,12 +444,33 @@ additive_expression:
 multiplicative_expr:
     unary_expr { $$ = $1; }
     | multiplicative_expr MUL unary_expr { 
+        DataType leftType = infer_expr_type(current_scope,$1);
+        DataType rightType = infer_expr_type(current_scope,$3);
+        if (!areTypesCompatibleForOp(leftType, rightType, "*")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for multiplication: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Multiplication\n"); 
     }
     | multiplicative_expr DIV unary_expr { 
+        DataType leftType = infer_expr_type(current_scope,$1);
+        DataType rightType = infer_expr_type(current_scope,$3);
+        if (!areTypesCompatibleForOp(leftType, rightType, "/")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for division: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Division\n"); 
     }
     | multiplicative_expr MOD unary_expr { 
+        DataType leftType = infer_expr_type(current_scope,$1);
+        DataType rightType = infer_expr_type(current_scope,$3);
+        if (!areTypesCompatibleForOp(leftType, rightType, "%")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for modulus: %s and %s\n",
+                line_number, dataTypeName[leftType], dataTypeName[rightType]);
+            exit(1);
+        }
         printf("Modulo\n"); 
     }
 ;
@@ -387,9 +478,21 @@ multiplicative_expr:
 unary_expr:
     postfix_expression { $$ = $1; }
     | NOT unary_expr { 
+        DataType leftType = infer_expr_type(current_scope,$2);
+        if (!areTypesCompatibleForOp(leftType, TYPE_BOOL, "!")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for logical not: %s\n",
+                line_number, dataTypeName[leftType]);
+            exit(1);
+        }
         printf("Logical NOT\n"); 
     }
     | SUB unary_expr { 
+        DataType leftType = infer_expr_type(current_scope,$2);
+        if (!areTypesCompatibleForOp(leftType, TYPE_INT, "-")) {
+            fprintf(stderr, "Semantic Error at line %d: Incompatible types for unary minus: %s\n",
+                line_number, dataTypeName[leftType]);
+            exit(1);
+        }
         printf("Unary minus\n"); 
     }
 ;
@@ -479,11 +582,11 @@ argument_list:
 
 argument_expr_list:
     argument_expr_list COMMA expression {
-        arg_types[$$++] = infer_expr_type($3);
+        arg_types[$$++] = infer_expr_type(current_scope,$3);
         $$ = $$;
     }
     | expression {
-        arg_types[0] = infer_expr_type($1);
+        arg_types[0] = infer_expr_type(current_scope,$1);
         $$ = 1;
     }
 ;
