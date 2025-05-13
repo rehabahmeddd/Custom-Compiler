@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#include "symbol_table.h"
 
 // Convert an integer to a string
 char* int_to_str(int value);
@@ -17,5 +19,9 @@ char* double_to_str(double value);
 
 // Convert a boolean to a string
 char* bool_to_str(int value);
+
+DataType infer_expr_type(char* expr);
+
+extern const char* dataTypeName[];
 
 #endif /* UTILS_H */

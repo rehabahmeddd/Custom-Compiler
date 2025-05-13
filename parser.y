@@ -8,8 +8,14 @@
 #include "utils.h"
 
 static Scope* global_scope = NULL;
- Scope* current_scope = NULL;
+Scope* current_scope = NULL;
 int is_function_body = 0;
+DataType current_param_types[100];
+int current_param_index = 0;
+DataType arg_types[100];
+int arg_count = 0;
+
+
 
 int yylex();
 extern int line_number;
@@ -82,6 +88,7 @@ char* for_cond_label = NULL;
 
 %token LPAREN RPAREN LBRACE RBRACE SEMICOLON COMMA COLON
 
+%type <ival> argument_list argument_expr_list
 %type <dtype> type_specifier
 %type <sval> expression additive_expression multiplicative_expr relational_expression equality_expression logical_and_expression logical_or_expression unary_expr primary_expr assignment_expression postfix_expression function_call
 
@@ -122,6 +129,12 @@ global_declaration:
         insert_symbol(current_scope, $2, $1, KIND_VAR, false);
         set_initialized(current_scope,$2);
         
+        Symbol* sym = lookup_symbol(current_scope, $2);
+        if (sym && sym->type != infer_expr_type($4)) {
+            fprintf(stderr, "Semantic Error at line %d: Type mismatch in declaration of '%s'. Expected %s but got %s.\n",
+                line_number, $2, dataTypeName[sym->type], dataTypeName[infer_expr_type($4)]);
+            exit(1);
+        }
         // Generate quadruples - pass string version of expression
         gen_quad(OP_ALLOCATE, $2, NULL, NULL);
         gen_quad(OP_ASSIGN, $4, NULL, $2);
@@ -151,39 +164,37 @@ type_specifier:
 ;
 
 function_definition:
-    type_specifier ID LPAREN   /* Part 1: Before parameters*/
-    {
-        // Insert function into global symbol table
+    type_specifier ID LPAREN {
         insert_symbol(current_scope, $2, $1, KIND_FUNCTION, false);
-        printf("Function: %s\n", $2);
 
-        // Set flag and create scope for parameters/body
-        is_function_body = 1;            // Mark as function body
-        current_scope = create_scope(current_scope);    // New scope for parameters + body
+        // Reset parameter tracker
+        current_param_index = 0;
 
-        // Generate function label - DO THIS FIRST
-        //int first_quad = quad_count;
+        is_function_body = 1;
+        current_scope = create_scope(current_scope);
         gen_quad(OP_LABEL, $2, NULL, NULL);
-        
-        // Reorder this quad to be at the beginning
-        //if (first_quad > 0) {
-            //Quadruple temp = quads[first_quad];
-            //for (int i = first_quad; i > 0; i--) {
-                //quads[i] = quads[i-1];
-            //}
-            //quads[0] = temp;
-        //}
     }
-     parameters RPAREN compound_statement              
-    {
+    parameters RPAREN {
+        // Re-lookup function symbol to attach parameter types
+        Symbol* func = lookup_symbol(global_scope, $2);
+        if (!func) {
+            fprintf(stderr, "Internal Error: Function symbol '%s' not found for parameter assignment.\n", $2);
+            exit(1);
+        }
+
+        func->param_types = malloc(sizeof(DataType) * current_param_index);
+        func->param_count = current_param_index;
+        for (int i = 0; i < current_param_index; i++) {
+            func->param_types[i] = current_param_types[i];
+        }
+    }
+    compound_statement {
         int last_quad_idx = quad_count - 1;
         if (last_quad_idx >= 0 && quads[last_quad_idx].op != OP_RETURN) {
             gen_quad(OP_RETURN, NULL, NULL, NULL);
         }
     }
-  
 ;
-
 
 
 
@@ -200,10 +211,12 @@ parameter_list:
 parameter:
     type_specifier ID {
         insert_symbol(current_scope, $2, $1, KIND_PARAMETER, false);
-        set_initialized(current_scope,$2);
+        set_initialized(current_scope, $2);
+        current_param_types[current_param_index++] = $1;  // Collect type
         printf("Parameter: %s\n", $2);
     }
 ;
+
 
 compound_statement:
     LBRACE 
@@ -248,6 +261,13 @@ declaration:
     | type_specifier ID ASSIGN expression SEMICOLON {
         insert_symbol(current_scope, $2, $1, KIND_VAR, false);
         set_initialized(current_scope,$2);
+
+        Symbol* sym = lookup_symbol(current_scope, $2);
+        if (sym && sym->type != infer_expr_type($4)) {
+            fprintf(stderr, "Semantic Error line %d: Type mismatch in declaration of '%s'. Expected %s but got %s.\n",
+                line_number, $2, dataTypeName[sym->type], dataTypeName[infer_expr_type($4)]);
+            exit(1);
+        }
         
         // Generate quadruples
         gen_quad(OP_ALLOCATE, $2, NULL, NULL);
@@ -444,11 +464,19 @@ assignment_expression:
     | ID ASSIGN assignment_expression {
         Symbol* sym = lookup_symbol(current_scope, $1);
         if (sym == NULL) {
-            fprintf(stderr, "Semantic Error: Undeclared variable %s\n", $1);
+            fprintf(stderr, "Semantic Error at line %d: Undeclared variable %s\n",line_number, $1);
+            exit(1);
         } else if (sym->constant) {
-            fprintf(stderr, "Semantic Error: Cannot reassign to constant variable %s\n", $1);
+            fprintf(stderr, "Semantic Error at line %d: Cannot reassign to constant variable %s\n",line_number, $1);
+            exit(1);
         } else {
             set_initialized(current_scope,$1);
+
+            if (sym->type != infer_expr_type($3)) {
+            fprintf(stderr, "Semantic Error line %d: Type mismatch in assignment to '%s'. Expected %s but got %s.\n",
+                line_number, $1, dataTypeName[sym->type], dataTypeName[infer_expr_type($3)]);
+                exit(1);
+            }
         
             // Generate assignment quadruple
             gen_quad(OP_ASSIGN, $3, NULL, $1);
@@ -616,12 +644,14 @@ primary_expr:
         Symbol* sym = lookup_symbol(current_scope, $1);
         const char* name=get_symbol_name(sym);
         if (sym == NULL) {
-            fprintf(stderr, "Semantic Error: Use of undeclared variable %s\n", $1);
+            fprintf(stderr, "Semantic Error at line %d: Use of undeclared variable %s\n",line_number, $1);
+            exit(1);
         } else if(!is_initialized(current_scope,name)) {
            
             fprintf(stderr, "Symbol Name: %s\n", name);
 
-            fprintf(stderr, "Semantic Error: Use of uninitialized variable %s\n", $1);
+            fprintf(stderr, "Semantic Error at line %d: Use of uninitialized variable %s\n",line_number, $1);
+            exit(1);
         }
         $$ = strdup($1);
         printf("Primary ID: %s\n", $1);
@@ -659,32 +689,49 @@ primary_expr:
 function_call:
     ID LPAREN argument_list RPAREN {
         Symbol* sym = lookup_symbol(current_scope, $1);
-        if (!sym || sym->kind != KIND_FUNCTION) {
-            fprintf(stderr, "Semantic Error: Undefined function %s\n", $1);
+    if (!sym || sym->kind != KIND_FUNCTION) {
+        fprintf(stderr, "Semantic Error at line %d: Undefined function %s\n", line_number,$1);
+        exit(1);
+    } else {
+        if (arg_count != sym->param_count) {
+            fprintf(stderr, "Semantic Error at line %d: Function '%s' expects %d arguments, but %d were given\n",
+                line_number,$1, sym->param_count, arg_count);
+            exit(1);
+        } else {
+            for (int i = 0; i < arg_count; i++) {
+                if (arg_types[i] != sym->param_types[i]) {
+                    fprintf(stderr, "Semantic Error at line %d: Type mismatch for parameter %d in function '%s'. Expected %s but got %s\n",
+                        line_number,i + 1, $1, dataTypeName[sym->param_types[i]], dataTypeName[arg_types[i]]);
+                    exit(1);
+                }
+            }
         }
-        
-        // Generate call quadruple
-        char* temp = new_temp();
-        gen_quad(OP_CALL, $1, "0", temp);  // "0" is placeholder for arg count
-        $$ = temp;
-        
-        printf("Function call to: %s\n", $1);
+    }
+
+    // Generate call quadruple
+    char* temp = new_temp();
+    gen_quad(OP_CALL, $1, int_to_str(arg_count), temp);
+    $$ = temp;
+
+    printf("Function call to: %s\n", $1);
     }
 ;
 
 argument_list:
-    argument_expr_list
-    | /* empty */
+    argument_expr_list { arg_count = $$; }
+    | /* empty */ { arg_count = 0; }
 ;
 
 argument_expr_list:
     argument_expr_list COMMA expression {
-        // Generate parameter quadruple
+        arg_types[$$++] = infer_expr_type($3);
         gen_quad(OP_PARAM, $3, NULL, NULL);
+        $$ = $$;
     }
     | expression {
-        // Generate parameter quadruple
+        arg_types[0] = infer_expr_type($1);
         gen_quad(OP_PARAM, $1, NULL, NULL);
+        $$ = 1;
     }
 ;
 

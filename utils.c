@@ -42,3 +42,24 @@ char* double_to_str(double value) {
 char* bool_to_str(int value) {
     return strdup(value ? "true" : "false");
 }
+
+DataType infer_expr_type(char* expr) {
+    // You should improve this based on how you encode constants or temporaries
+    if (strchr(expr, '.') != NULL) return TYPE_FLOAT;
+    if (strcmp(expr, "true") == 0 || strcmp(expr, "false") == 0) return TYPE_BOOL;
+    if (expr[0] == '"') return TYPE_STRING;
+    if (expr[0] == '\'') return TYPE_CHAR;
+    if (expr[0] == 't' && isdigit(expr[1])) return TYPE_INT; // assuming temporaries default to int
+    return TYPE_INT;
+}
+
+const char* dataTypeName[] = {
+    "int",
+    "float",
+    "double",
+    "string",
+    "char",
+    "bool",
+    "void"
+};
+

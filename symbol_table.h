@@ -39,6 +39,9 @@ typedef struct Symbol {
 
     struct Scope* scope;  // The scope in which the symbol is defined
     struct Symbol* next;  // Linked list of symbols in the same scope
+
+    DataType* param_types;
+    int param_count;
 } Symbol;
 
 typedef struct Scope {
