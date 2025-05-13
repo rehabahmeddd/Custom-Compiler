@@ -438,15 +438,16 @@ assignment_expression:
         Symbol* sym = lookup_symbol(current_scope, $1);
         if (sym == NULL) {
             fprintf(stderr, "Semantic Error: Undeclared variable %s\n", $1);
+        } else if (sym->constant) {
+            fprintf(stderr, "Semantic Error: Cannot reassign to constant variable %s\n", $1);
         } else {
             set_initialized(current_scope,$1);
+        
+            // Generate assignment quadruple
+            gen_quad(OP_ASSIGN, $3, NULL, $1);
+            printf("Assignment to %s\n", $1);
         }
-        
-        // Generate assignment quadruple
-        gen_quad(OP_ASSIGN, $3, NULL, $1);
-        
         $$ = strdup($1);
-        printf("Assignment to %s\n", $1);
     }
 ;
 
