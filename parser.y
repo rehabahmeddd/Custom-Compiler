@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include "symbol_table.h"
-#include "quadruples.h"
 #include "utils.h"
 
 static Scope* global_scope = NULL;
@@ -16,7 +15,6 @@ DataType arg_types[100];
 int arg_count = 0;
 
 
-
 int yylex();
 extern int line_number;
 extern FILE* yyin;
@@ -25,37 +23,6 @@ void yyerror(const char *s) {
     fprintf(stderr, "Syntax Error at line %d: %s\n", line_number, s);
     exit(1);
 }
-
-// Temporary variable counter
-int temp_counter = 0;
-
-// Function to generate new temporary variable
-char* new_temp() {
-    char* temp = (char*)malloc(20);
-    sprintf(temp, "t%d", temp_counter++);
-    return temp;
-}
-
-// Label counter
-int label_counter = 0;
-
-// Function to generate new label
-char* new_label() {
-    char* label = (char*)malloc(20);
-    sprintf(label, "L%d", label_counter++);
-    return label;
-}
-
-// Labels for loops and control structures
-char* break_label = NULL;
-char* continue_label = NULL;
-char* old_break_label = NULL;
-char* old_continue_label = NULL;
-
-// For loop labels
-char* while_start_label = NULL;
-char* do_body_label = NULL;
-char* for_cond_label = NULL;
 %}
 
 %union {
@@ -95,15 +62,7 @@ char* for_cond_label = NULL;
 %%
 
 program:
-    { 
-        // Initialize the quadruple system
-        init_quads();
-    }
     translation_unit
-    {
-        // Print the generated quadruples
-        print_quads();
-    }
 ;
 
 translation_unit:
@@ -118,11 +77,7 @@ external_declaration:
 
 global_declaration:
     type_specifier ID SEMICOLON {
-        insert_symbol(current_scope, $2, $1, KIND_VAR, false);
-        
-        // Generate quadruple for allocation
-        gen_quad(OP_ALLOCATE, $2, NULL, NULL);
-        
+        insert_symbol(current_scope, $2, $1, KIND_VAR, false);        
         printf("Global Declaration: %s\n", $2);
     }
     | type_specifier ID ASSIGN expression SEMICOLON {
@@ -135,20 +90,11 @@ global_declaration:
                 line_number, $2, dataTypeName[sym->type], dataTypeName[infer_expr_type($4)]);
             exit(1);
         }
-        // Generate quadruples - pass string version of expression
-        gen_quad(OP_ALLOCATE, $2, NULL, NULL);
-        gen_quad(OP_ASSIGN, $4, NULL, $2);
-        
         printf("Global Declaration with assignment: %s\n", $2);
     }
     | CONST type_specifier ID ASSIGN expression SEMICOLON {
         insert_symbol(current_scope, $3, $2, KIND_VAR, true);
         set_initialized(current_scope,$3);
-        
-        // Generate quadruples - pass string version of expression
-        gen_quad(OP_ALLOCATE, $3, NULL, NULL);
-        gen_quad(OP_ASSIGN, $5, NULL, $3);
-        
         printf("Global Constant declaration: %s\n", $3);
     }
 ;
@@ -172,7 +118,6 @@ function_definition:
 
         is_function_body = 1;
         current_scope = create_scope(current_scope);
-        gen_quad(OP_LABEL, $2, NULL, NULL);
     }
     parameters RPAREN {
         // Re-lookup function symbol to attach parameter types
@@ -188,14 +133,8 @@ function_definition:
             func->param_types[i] = current_param_types[i];
         }
     }
-    compound_statement {
-        int last_quad_idx = quad_count - 1;
-        if (last_quad_idx >= 0 && quads[last_quad_idx].op != OP_RETURN) {
-            gen_quad(OP_RETURN, NULL, NULL, NULL);
-        }
-    }
+    compound_statement 
 ;
-
 
 
 parameters:
@@ -252,10 +191,6 @@ block_item:
 declaration:
     type_specifier ID SEMICOLON {
         insert_symbol(current_scope, $2, $1, KIND_VAR, false);
-        
-        // Generate allocation quadruple
-        gen_quad(OP_ALLOCATE, $2, NULL, NULL);
-        
         printf("Local Declaration: %s\n", $2);
     }
     | type_specifier ID ASSIGN expression SEMICOLON {
@@ -268,21 +203,11 @@ declaration:
                 line_number, $2, dataTypeName[sym->type], dataTypeName[infer_expr_type($4)]);
             exit(1);
         }
-        
-        // Generate quadruples
-        gen_quad(OP_ALLOCATE, $2, NULL, NULL);
-        gen_quad(OP_ASSIGN, $4, NULL, $2);
-        
         printf("Local Declaration with assignment: %s\n", $2);
     }
     | CONST type_specifier ID ASSIGN expression SEMICOLON {
         insert_symbol(current_scope, $3, $2, KIND_VAR, true);
         set_initialized(current_scope,$3);
-        
-        // Generate quadruples
-        gen_quad(OP_ALLOCATE, $3, NULL, NULL);
-        gen_quad(OP_ASSIGN, $5, NULL, $3);
-        
         printf("Local Constant declaration: %s\n", $3);
     }
 ;
@@ -302,50 +227,12 @@ expression_statement:
 
 selection_statement:
     IF LPAREN expression RPAREN statement %prec LOWER_THAN_ELSE {
-        // For simple if
-        char* false_label = new_label();
-        // Move the jump right after the condition
-        gen_quad(OP_JMPF, $3, NULL, false_label);
-        // Move the label to after the statement
-        gen_quad(OP_LABEL, false_label, NULL, NULL);
-        
         printf("If statement\n");
     }
     | IF LPAREN expression RPAREN statement ELSE statement {
-        // If-else statement
-        char* false_label = new_label();
-        char* end_label = new_label();
-        
-        // 1. Generate condition check
-        // $3 is already generated by the expression rule
-        
-        // 2. Generate false jump (immediately after condition)
-        gen_quad(OP_JMPF, $3, NULL, false_label);
-        
-        // 3. 'then' statement ($5) will be generated here automatically
-        
-        // 4. Jump over 'else' block
-        gen_quad(OP_JMP, NULL, NULL, end_label);
-        
-        // 5. False label (start of else block)
-        gen_quad(OP_LABEL, false_label, NULL, NULL);
-        
-        // 6. 'else' statement ($7) will be generated here automatically
-        
-        // 7. End label
-        gen_quad(OP_LABEL, end_label, NULL, NULL);
-        
         printf("If-else statement\n");
     }
     | SWITCH LPAREN expression RPAREN LBRACE case_list RBRACE {
-        char* end_switch = new_label();
-        old_break_label = break_label;
-        break_label = end_switch;
-
-        // Case list will be generated with jump labels, etc.
-
-        gen_quad(OP_LABEL, break_label, NULL, NULL);
-        break_label = old_break_label;
         printf("Switch statement\n");
     }
 ;
@@ -357,18 +244,9 @@ case_list:
 
 case:
     CASE INT COLON statement_list {
-        // Generate case label
-        char* case_label = new_label();
-        char* int_str = int_to_str($2);
-        gen_quad(OP_LABEL, case_label, NULL, NULL);
-        free(int_str);
-
         printf("Case: %d\n", $2);
     } 
     | DEFAULT COLON statement_list {
-        // Generate default label
-        char* default_label = new_label();
-        gen_quad(OP_LABEL, default_label, NULL, NULL);
         printf("Default case\n");
     } 
 ;
@@ -380,50 +258,17 @@ statement_list:
 
 iteration_statement:
     WHILE LPAREN expression RPAREN statement {
-        // Create labels for loop
-        char* start_label = new_label();
-        char* end_label = new_label();
-        
-        // Generate quadruples
-        gen_quad(OP_LABEL, start_label, NULL, NULL);
-        gen_quad(OP_JMPF, $3, NULL, end_label);
-        gen_quad(OP_JMP, NULL, NULL, start_label);
-        gen_quad(OP_LABEL, end_label, NULL, NULL);
-        
         printf("While loop\n");
     }
     | DO statement WHILE LPAREN expression RPAREN SEMICOLON {
-        // Create labels for do-while loop
-        char* start_label = new_label();
-        char* end_label = new_label();
-        
-        // Generate quadruples
-        gen_quad(OP_LABEL, start_label, NULL, NULL);
-        gen_quad(OP_JMPT, $5, NULL, start_label);
-        gen_quad(OP_LABEL, end_label, NULL, NULL);
-        
         printf("Do-while loop\n");
     }
     | FOR LPAREN { is_function_body = 1; current_scope = create_scope(current_scope);}
         for_clause RPAREN statement {  printf("For loop\n"); }
-    
+;   
 
-    for_clause:
-    for_init_statement expression SEMICOLON expression{
-         // Create labels for for loop
-        char* cond_label = new_label();
-        char* body_label = new_label();
-        char* update_label = new_label();
-        char* end_label = new_label();
-        
-        // Generate quadruples
-        gen_quad(OP_LABEL, cond_label, NULL, NULL);
-        gen_quad(OP_JMPF, $4, NULL, end_label);
-        gen_quad(OP_LABEL, body_label, NULL, NULL);
-        gen_quad(OP_LABEL, update_label, NULL, NULL);
-        gen_quad(OP_JMP, NULL, NULL, cond_label);
-        gen_quad(OP_LABEL, end_label, NULL, NULL);
-    }
+for_clause:
+    for_init_statement expression SEMICOLON expression
 ;
 
 
@@ -434,23 +279,15 @@ for_init_statement:
 
 jump_statement:
     RETURN expression SEMICOLON {
-        gen_quad(OP_RETURN, $2, NULL, NULL);
         printf("Return statement\n");
     }
     | RETURN SEMICOLON {
-        gen_quad(OP_RETURN, NULL, NULL, NULL);
         printf("Return void\n");
     }
     | BREAK SEMICOLON {
-        if (break_label) {
-            gen_quad(OP_JMP, NULL, NULL, break_label);
-        }
         printf("Break statement\n");
     }
     | CONTINUE SEMICOLON {
-        if (continue_label) {
-            gen_quad(OP_JMP, NULL, NULL, continue_label);
-        }
         printf("Continue statement\n");
     }
 ;
@@ -478,9 +315,6 @@ assignment_expression:
                 line_number, $1, dataTypeName[sym->type], dataTypeName[infer_expr_type($3)]);
                 exit(1);
             }
-        
-            // Generate assignment quadruple
-            gen_quad(OP_ASSIGN, $3, NULL, $1);
             printf("Assignment to %s\n", $1);
         }
         $$ = strdup($1);
@@ -490,11 +324,6 @@ assignment_expression:
 logical_or_expression:
     logical_and_expression { $$ = $1; }
     | logical_or_expression OR logical_and_expression { 
-        // Generate OR operation
-        char* temp = new_temp();
-        gen_quad(OP_OR, $1, $3, temp);
-        $$ = temp;
-        
         printf("Logical OR\n"); 
     }
 ;
@@ -502,11 +331,6 @@ logical_or_expression:
 logical_and_expression:
     equality_expression { $$ = $1; }
     | logical_and_expression AND equality_expression { 
-        // Generate AND operation
-        char* temp = new_temp();
-        gen_quad(OP_AND, $1, $3, temp);
-        $$ = temp;
-        
         printf("Logical AND\n"); 
     }
 ;
@@ -514,19 +338,9 @@ logical_and_expression:
 equality_expression:
     relational_expression { $$ = $1; }
     | equality_expression EQ relational_expression { 
-        // Generate equality comparison
-        char* temp = new_temp();
-        gen_quad(OP_EQ, $1, $3, temp);
-        $$ = temp;
-        
         printf("Equality\n");
     }
     | equality_expression NEQ relational_expression {
-        // Generate inequality comparison
-        char* temp = new_temp();
-        gen_quad(OP_NEQ, $1, $3, temp);
-        $$ = temp;
-        
         printf("Not Equal\n");
     }
 ;
@@ -534,35 +348,15 @@ equality_expression:
 relational_expression:
     additive_expression { $$ = $1; }
     | relational_expression LT additive_expression { 
-        // Generate less than comparison
-        char* temp = new_temp();
-        gen_quad(OP_LT, $1, $3, temp);
-        $$ = temp;
-        
         printf("Less than\n"); 
     }
     | relational_expression GT additive_expression { 
-        // Generate greater than comparison
-        char* temp = new_temp();
-        gen_quad(OP_GT, $1, $3, temp);
-        $$ = temp;
-        
         printf("Greater than\n"); 
     }
     | relational_expression LE additive_expression { 
-        // Generate less than or equal comparison
-        char* temp = new_temp();
-        gen_quad(OP_LE, $1, $3, temp);
-        $$ = temp;
-        
         printf("Less than or equal\n"); 
     }
     | relational_expression GE additive_expression { 
-        // Generate greater than or equal comparison
-        char* temp = new_temp();
-        gen_quad(OP_GE, $1, $3, temp);
-        $$ = temp;
-        
         printf("Greater than or equal\n"); 
     }
 ;
@@ -570,19 +364,9 @@ relational_expression:
 additive_expression:
     multiplicative_expr { $$ = $1; }
     | additive_expression ADD multiplicative_expr { 
-        // Generate addition
-        char* temp = new_temp();
-        gen_quad(OP_ADD, $1, $3, temp);
-        $$ = temp;
-        
         printf("Addition\n"); 
     }
     | additive_expression SUB multiplicative_expr { 
-        // Generate subtraction
-        char* temp = new_temp();
-        gen_quad(OP_SUB, $1, $3, temp);
-        $$ = temp;
-        
         printf("Subtraction\n"); 
     }
 ;
@@ -590,27 +374,12 @@ additive_expression:
 multiplicative_expr:
     unary_expr { $$ = $1; }
     | multiplicative_expr MUL unary_expr { 
-        // Generate multiplication
-        char* temp = new_temp();
-        gen_quad(OP_MUL, $1, $3, temp);
-        $$ = temp;
-        
         printf("Multiplication\n"); 
     }
     | multiplicative_expr DIV unary_expr { 
-        // Generate division
-        char* temp = new_temp();
-        gen_quad(OP_DIV, $1, $3, temp);
-        $$ = temp;
-        
         printf("Division\n"); 
     }
     | multiplicative_expr MOD unary_expr { 
-        // Generate modulo
-        char* temp = new_temp();
-        gen_quad(OP_MOD, $1, $3, temp);
-        $$ = temp;
-        
         printf("Modulo\n"); 
     }
 ;
@@ -618,19 +387,9 @@ multiplicative_expr:
 unary_expr:
     postfix_expression { $$ = $1; }
     | NOT unary_expr { 
-        // Generate logical NOT
-        char* temp = new_temp();
-        gen_quad(OP_NOT, $2, NULL, temp);
-        $$ = temp;
-        
         printf("Logical NOT\n"); 
     }
     | SUB unary_expr { 
-        // Generate unary minus
-        char* temp = new_temp();
-        gen_quad(OP_NEG, $2, NULL, temp);
-        $$ = temp;
-        
         printf("Unary minus\n"); 
     }
 ;
@@ -709,12 +468,6 @@ function_call:
             }
         }
     }
-
-    // Generate call quadruple
-    char* temp = new_temp();
-    gen_quad(OP_CALL, $1, int_to_str(arg_count), temp);
-    $$ = temp;
-
     printf("Function call to: %s\n", $1);
     }
 ;
@@ -727,12 +480,10 @@ argument_list:
 argument_expr_list:
     argument_expr_list COMMA expression {
         arg_types[$$++] = infer_expr_type($3);
-        gen_quad(OP_PARAM, $3, NULL, NULL);
         $$ = $$;
     }
     | expression {
         arg_types[0] = infer_expr_type($1);
-        gen_quad(OP_PARAM, $1, NULL, NULL);
         $$ = 1;
     }
 ;
@@ -779,16 +530,15 @@ int main(int argc, char* argv[]) {
     
     // Parse input
     yyparse();
+
+    warn_unused_vars(global_scope);
     
     // Print symbol table
     printf("\n---- SYMBOL TABLE ----\n");
     print_scope(global_scope, 0);
-
-    warn_unused_vars(global_scope);
     
     // Free resources
     free_scope(global_scope);
-    free_quads();
     
     return 0;
 }
