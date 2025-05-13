@@ -471,6 +471,7 @@ assignment_expression:
             exit(1);
         } else {
             set_initialized(current_scope,$1);
+            sym->is_used = true;
 
             if (sym->type != infer_expr_type($3)) {
             fprintf(stderr, "Semantic Error line %d: Type mismatch in assignment to '%s'. Expected %s but got %s.\n",
@@ -653,6 +654,7 @@ primary_expr:
             fprintf(stderr, "Semantic Error at line %d: Use of uninitialized variable %s\n",line_number, $1);
             exit(1);
         }
+        sym->is_used = true;
         $$ = strdup($1);
         printf("Primary ID: %s\n", $1);
     }
@@ -735,7 +737,28 @@ argument_expr_list:
     }
 ;
 
+
 %%
+
+void warn_unused_vars(Scope* scope) {
+    if (!scope) return;
+
+    Symbol* sym = scope->symbols;
+    while (sym) {
+        if (sym->kind == KIND_VAR && !sym->is_used) {
+            fprintf(stderr, "Warning: Variable '%s' declared but never used\n", sym->name);
+        }
+        sym = sym->next;
+    }
+
+    // Recurse into child scopes
+    Scope* child = scope->children;
+    while (child) {
+        warn_unused_vars(child);
+        child = child->sibling;
+    }
+}
+
 
 int main(int argc, char* argv[]) {
     // Initialize symbol table
@@ -760,6 +783,8 @@ int main(int argc, char* argv[]) {
     // Print symbol table
     printf("\n---- SYMBOL TABLE ----\n");
     print_scope(global_scope, 0);
+
+    warn_unused_vars(global_scope);
     
     // Free resources
     free_scope(global_scope);

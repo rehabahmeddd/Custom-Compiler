@@ -1,20 +1,8 @@
-const int hi = 6;
-
-
-int hello(int x)
-{
-    return x + 1;
-}
-
-int add (int x, int y)
-{
-    int z = hello(5);
-    return x + y;
-}
+int x = 9;
 int main()
 {
-    int z = add(6,8);
-    
+    int z = 3;
+    int y = z + 1;
 }
 
 

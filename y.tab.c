@@ -801,11 +801,11 @@ static const yytype_int16 yyrline[] =
      248,   249,   253,   261,   278,   291,   292,   293,   294,   295,
      299,   300,   304,   314,   340,   354,   355,   359,   368,   377,
      378,   382,   395,   407,   407,   412,   431,   432,   436,   440,
-     444,   450,   459,   463,   464,   490,   491,   502,   503,   514,
-     515,   523,   534,   535,   543,   551,   559,   570,   571,   579,
-     590,   591,   599,   607,   618,   619,   627,   638,   639,   643,
-     659,   664,   669,   674,   678,   682,   686,   690,   721,   722,
-     726,   731
+     444,   450,   459,   463,   464,   491,   492,   503,   504,   515,
+     516,   524,   535,   536,   544,   552,   560,   571,   572,   580,
+     591,   592,   600,   608,   619,   620,   628,   639,   640,   644,
+     661,   666,   671,   676,   680,   684,   688,   692,   723,   724,
+     728,   733
 };
 #endif
 
@@ -1962,6 +1962,7 @@ yyreduce:
             exit(1);
         } else {
             set_initialized(current_scope,(yyvsp[-2].sval));
+            sym->is_used = true;
 
             if (sym->type != infer_expr_type((yyvsp[0].sval))) {
             fprintf(stderr, "Semantic Error line %d: Type mismatch in assignment to '%s'. Expected %s but got %s.\n",
@@ -1975,17 +1976,17 @@ yyreduce:
         }
         (yyval.sval) = strdup((yyvsp[-2].sval));
     }
-#line 1979 "y.tab.c"
+#line 1980 "y.tab.c"
     break;
 
   case 65: /* logical_or_expression: logical_and_expression  */
-#line 490 "parser.y"
+#line 491 "parser.y"
                            { (yyval.sval) = (yyvsp[0].sval); }
-#line 1985 "y.tab.c"
+#line 1986 "y.tab.c"
     break;
 
   case 66: /* logical_or_expression: logical_or_expression OR logical_and_expression  */
-#line 491 "parser.y"
+#line 492 "parser.y"
                                                       { 
         // Generate OR operation
         char* temp = new_temp();
@@ -1994,17 +1995,17 @@ yyreduce:
         
         printf("Logical OR\n"); 
     }
-#line 1998 "y.tab.c"
+#line 1999 "y.tab.c"
     break;
 
   case 67: /* logical_and_expression: equality_expression  */
-#line 502 "parser.y"
+#line 503 "parser.y"
                         { (yyval.sval) = (yyvsp[0].sval); }
-#line 2004 "y.tab.c"
+#line 2005 "y.tab.c"
     break;
 
   case 68: /* logical_and_expression: logical_and_expression AND equality_expression  */
-#line 503 "parser.y"
+#line 504 "parser.y"
                                                      { 
         // Generate AND operation
         char* temp = new_temp();
@@ -2013,17 +2014,17 @@ yyreduce:
         
         printf("Logical AND\n"); 
     }
-#line 2017 "y.tab.c"
+#line 2018 "y.tab.c"
     break;
 
   case 69: /* equality_expression: relational_expression  */
-#line 514 "parser.y"
+#line 515 "parser.y"
                           { (yyval.sval) = (yyvsp[0].sval); }
-#line 2023 "y.tab.c"
+#line 2024 "y.tab.c"
     break;
 
   case 70: /* equality_expression: equality_expression EQ relational_expression  */
-#line 515 "parser.y"
+#line 516 "parser.y"
                                                    { 
         // Generate equality comparison
         char* temp = new_temp();
@@ -2032,11 +2033,11 @@ yyreduce:
         
         printf("Equality\n");
     }
-#line 2036 "y.tab.c"
+#line 2037 "y.tab.c"
     break;
 
   case 71: /* equality_expression: equality_expression NEQ relational_expression  */
-#line 523 "parser.y"
+#line 524 "parser.y"
                                                     {
         // Generate inequality comparison
         char* temp = new_temp();
@@ -2045,17 +2046,17 @@ yyreduce:
         
         printf("Not Equal\n");
     }
-#line 2049 "y.tab.c"
+#line 2050 "y.tab.c"
     break;
 
   case 72: /* relational_expression: additive_expression  */
-#line 534 "parser.y"
+#line 535 "parser.y"
                         { (yyval.sval) = (yyvsp[0].sval); }
-#line 2055 "y.tab.c"
+#line 2056 "y.tab.c"
     break;
 
   case 73: /* relational_expression: relational_expression LT additive_expression  */
-#line 535 "parser.y"
+#line 536 "parser.y"
                                                    { 
         // Generate less than comparison
         char* temp = new_temp();
@@ -2064,11 +2065,11 @@ yyreduce:
         
         printf("Less than\n"); 
     }
-#line 2068 "y.tab.c"
+#line 2069 "y.tab.c"
     break;
 
   case 74: /* relational_expression: relational_expression GT additive_expression  */
-#line 543 "parser.y"
+#line 544 "parser.y"
                                                    { 
         // Generate greater than comparison
         char* temp = new_temp();
@@ -2077,11 +2078,11 @@ yyreduce:
         
         printf("Greater than\n"); 
     }
-#line 2081 "y.tab.c"
+#line 2082 "y.tab.c"
     break;
 
   case 75: /* relational_expression: relational_expression LE additive_expression  */
-#line 551 "parser.y"
+#line 552 "parser.y"
                                                    { 
         // Generate less than or equal comparison
         char* temp = new_temp();
@@ -2090,11 +2091,11 @@ yyreduce:
         
         printf("Less than or equal\n"); 
     }
-#line 2094 "y.tab.c"
+#line 2095 "y.tab.c"
     break;
 
   case 76: /* relational_expression: relational_expression GE additive_expression  */
-#line 559 "parser.y"
+#line 560 "parser.y"
                                                    { 
         // Generate greater than or equal comparison
         char* temp = new_temp();
@@ -2103,17 +2104,17 @@ yyreduce:
         
         printf("Greater than or equal\n"); 
     }
-#line 2107 "y.tab.c"
+#line 2108 "y.tab.c"
     break;
 
   case 77: /* additive_expression: multiplicative_expr  */
-#line 570 "parser.y"
+#line 571 "parser.y"
                         { (yyval.sval) = (yyvsp[0].sval); }
-#line 2113 "y.tab.c"
+#line 2114 "y.tab.c"
     break;
 
   case 78: /* additive_expression: additive_expression ADD multiplicative_expr  */
-#line 571 "parser.y"
+#line 572 "parser.y"
                                                   { 
         // Generate addition
         char* temp = new_temp();
@@ -2122,11 +2123,11 @@ yyreduce:
         
         printf("Addition\n"); 
     }
-#line 2126 "y.tab.c"
+#line 2127 "y.tab.c"
     break;
 
   case 79: /* additive_expression: additive_expression SUB multiplicative_expr  */
-#line 579 "parser.y"
+#line 580 "parser.y"
                                                   { 
         // Generate subtraction
         char* temp = new_temp();
@@ -2135,17 +2136,17 @@ yyreduce:
         
         printf("Subtraction\n"); 
     }
-#line 2139 "y.tab.c"
+#line 2140 "y.tab.c"
     break;
 
   case 80: /* multiplicative_expr: unary_expr  */
-#line 590 "parser.y"
+#line 591 "parser.y"
                { (yyval.sval) = (yyvsp[0].sval); }
-#line 2145 "y.tab.c"
+#line 2146 "y.tab.c"
     break;
 
   case 81: /* multiplicative_expr: multiplicative_expr MUL unary_expr  */
-#line 591 "parser.y"
+#line 592 "parser.y"
                                          { 
         // Generate multiplication
         char* temp = new_temp();
@@ -2154,11 +2155,11 @@ yyreduce:
         
         printf("Multiplication\n"); 
     }
-#line 2158 "y.tab.c"
+#line 2159 "y.tab.c"
     break;
 
   case 82: /* multiplicative_expr: multiplicative_expr DIV unary_expr  */
-#line 599 "parser.y"
+#line 600 "parser.y"
                                          { 
         // Generate division
         char* temp = new_temp();
@@ -2167,11 +2168,11 @@ yyreduce:
         
         printf("Division\n"); 
     }
-#line 2171 "y.tab.c"
+#line 2172 "y.tab.c"
     break;
 
   case 83: /* multiplicative_expr: multiplicative_expr MOD unary_expr  */
-#line 607 "parser.y"
+#line 608 "parser.y"
                                          { 
         // Generate modulo
         char* temp = new_temp();
@@ -2180,17 +2181,17 @@ yyreduce:
         
         printf("Modulo\n"); 
     }
-#line 2184 "y.tab.c"
+#line 2185 "y.tab.c"
     break;
 
   case 84: /* unary_expr: postfix_expression  */
-#line 618 "parser.y"
+#line 619 "parser.y"
                        { (yyval.sval) = (yyvsp[0].sval); }
-#line 2190 "y.tab.c"
+#line 2191 "y.tab.c"
     break;
 
   case 85: /* unary_expr: NOT unary_expr  */
-#line 619 "parser.y"
+#line 620 "parser.y"
                      { 
         // Generate logical NOT
         char* temp = new_temp();
@@ -2199,11 +2200,11 @@ yyreduce:
         
         printf("Logical NOT\n"); 
     }
-#line 2203 "y.tab.c"
+#line 2204 "y.tab.c"
     break;
 
   case 86: /* unary_expr: SUB unary_expr  */
-#line 627 "parser.y"
+#line 628 "parser.y"
                      { 
         // Generate unary minus
         char* temp = new_temp();
@@ -2212,23 +2213,23 @@ yyreduce:
         
         printf("Unary minus\n"); 
     }
-#line 2216 "y.tab.c"
+#line 2217 "y.tab.c"
     break;
 
   case 87: /* postfix_expression: primary_expr  */
-#line 638 "parser.y"
+#line 639 "parser.y"
                  { (yyval.sval) = (yyvsp[0].sval); }
-#line 2222 "y.tab.c"
+#line 2223 "y.tab.c"
     break;
 
   case 88: /* postfix_expression: function_call  */
-#line 639 "parser.y"
+#line 640 "parser.y"
                     { (yyval.sval) = (yyvsp[0].sval); }
-#line 2228 "y.tab.c"
+#line 2229 "y.tab.c"
     break;
 
   case 89: /* primary_expr: ID  */
-#line 643 "parser.y"
+#line 644 "parser.y"
        {
         Symbol* sym = lookup_symbol(current_scope, (yyvsp[0].sval));
         const char* name=get_symbol_name(sym);
@@ -2242,77 +2243,78 @@ yyreduce:
             fprintf(stderr, "Semantic Error at line %d: Use of uninitialized variable %s\n",line_number, (yyvsp[0].sval));
             exit(1);
         }
+        sym->is_used = true;
         (yyval.sval) = strdup((yyvsp[0].sval));
         printf("Primary ID: %s\n", (yyvsp[0].sval));
     }
-#line 2249 "y.tab.c"
+#line 2251 "y.tab.c"
     break;
 
   case 90: /* primary_expr: INT  */
-#line 659 "parser.y"
+#line 661 "parser.y"
           { 
         // Convert INT to string
         (yyval.sval) = int_to_str((yyvsp[0].ival));
         printf("Primary int: %d\n", (yyvsp[0].ival)); 
     }
-#line 2259 "y.tab.c"
+#line 2261 "y.tab.c"
     break;
 
   case 91: /* primary_expr: FLOAT  */
-#line 664 "parser.y"
+#line 666 "parser.y"
             { 
         // Convert FLOAT to string
         (yyval.sval) = float_to_str((yyvsp[0].fval));
         printf("Primary float: %f\n", (yyvsp[0].fval)); 
     }
-#line 2269 "y.tab.c"
+#line 2271 "y.tab.c"
     break;
 
   case 92: /* primary_expr: DOUBLE  */
-#line 669 "parser.y"
+#line 671 "parser.y"
              { 
         // Convert DOUBLE to string
         (yyval.sval) = double_to_str((yyvsp[0].fval));
         printf("Primary double: %f\n", (yyvsp[0].fval)); 
     }
-#line 2279 "y.tab.c"
+#line 2281 "y.tab.c"
     break;
 
   case 93: /* primary_expr: STRING  */
-#line 674 "parser.y"
+#line 676 "parser.y"
              { 
         (yyval.sval) = strdup((yyvsp[0].sval));
         printf("Primary string: %s\n", (yyvsp[0].sval)); 
     }
-#line 2288 "y.tab.c"
+#line 2290 "y.tab.c"
     break;
 
   case 94: /* primary_expr: CHAR  */
-#line 678 "parser.y"
+#line 680 "parser.y"
            { 
         (yyval.sval) = strdup((yyvsp[0].sval));
         printf("Primary char: %c\n", (yyvsp[0].sval)[1]); 
     }
-#line 2297 "y.tab.c"
+#line 2299 "y.tab.c"
     break;
 
   case 95: /* primary_expr: BOOL  */
-#line 682 "parser.y"
+#line 684 "parser.y"
            { 
         (yyval.sval) = bool_to_str((yyvsp[0].bval));
         printf("Primary bool: %s\n", (yyvsp[0].bval) ? "true" : "false"); 
     }
-#line 2306 "y.tab.c"
+#line 2308 "y.tab.c"
     break;
 
   case 96: /* primary_expr: LPAREN expression RPAREN  */
-#line 686 "parser.y"
+#line 688 "parser.y"
                                { (yyval.sval) = (yyvsp[-1].sval); }
-#line 2312 "y.tab.c"
+#line 2314 "y.tab.c"
     break;
 
   case 97: /* function_call: ID LPAREN argument_list RPAREN  */
-#line 690 "parser.y"
+#line 692 "parser.y"
                                    {
         Symbol* sym = lookup_symbol(current_scope, (yyvsp[-3].sval));
     if (!sym || sym->kind != KIND_FUNCTION) {
@@ -2341,43 +2343,43 @@ yyreduce:
 
     printf("Function call to: %s\n", (yyvsp[-3].sval));
     }
-#line 2345 "y.tab.c"
+#line 2347 "y.tab.c"
     break;
 
   case 98: /* argument_list: argument_expr_list  */
-#line 721 "parser.y"
+#line 723 "parser.y"
                        { arg_count = (yyval.ival); }
-#line 2351 "y.tab.c"
+#line 2353 "y.tab.c"
     break;
 
   case 99: /* argument_list: %empty  */
-#line 722 "parser.y"
+#line 724 "parser.y"
                   { arg_count = 0; }
-#line 2357 "y.tab.c"
+#line 2359 "y.tab.c"
     break;
 
   case 100: /* argument_expr_list: argument_expr_list COMMA expression  */
-#line 726 "parser.y"
+#line 728 "parser.y"
                                         {
         arg_types[(yyval.ival)++] = infer_expr_type((yyvsp[0].sval));
         gen_quad(OP_PARAM, (yyvsp[0].sval), NULL, NULL);
         (yyval.ival) = (yyval.ival);
     }
-#line 2367 "y.tab.c"
+#line 2369 "y.tab.c"
     break;
 
   case 101: /* argument_expr_list: expression  */
-#line 731 "parser.y"
+#line 733 "parser.y"
                  {
         arg_types[0] = infer_expr_type((yyvsp[0].sval));
         gen_quad(OP_PARAM, (yyvsp[0].sval), NULL, NULL);
         (yyval.ival) = 1;
     }
-#line 2377 "y.tab.c"
+#line 2379 "y.tab.c"
     break;
 
 
-#line 2381 "y.tab.c"
+#line 2383 "y.tab.c"
 
       default: break;
     }
@@ -2570,7 +2572,27 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 738 "parser.y"
+#line 741 "parser.y"
+
+
+void warn_unused_vars(Scope* scope) {
+    if (!scope) return;
+
+    Symbol* sym = scope->symbols;
+    while (sym) {
+        if (sym->kind == KIND_VAR && !sym->is_used) {
+            fprintf(stderr, "Warning: Variable '%s' declared but never used\n", sym->name);
+        }
+        sym = sym->next;
+    }
+
+    // Recurse into child scopes
+    Scope* child = scope->children;
+    while (child) {
+        warn_unused_vars(child);
+        child = child->sibling;
+    }
+}
 
 
 int main(int argc, char* argv[]) {
@@ -2596,6 +2618,8 @@ int main(int argc, char* argv[]) {
     // Print symbol table
     printf("\n---- SYMBOL TABLE ----\n");
     print_scope(global_scope, 0);
+
+    warn_unused_vars(global_scope);
     
     // Free resources
     free_scope(global_scope);
