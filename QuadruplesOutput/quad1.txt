@@ -1,0 +1,21 @@
+FUNC_BEGIN main
+ASSIGN 5 a
+ASSIGN 10 b
+ADD a b t0
+ASSIGN t0 c
+SUB a b t1
+ASSIGN t1 c
+MUL a b t2
+ASSIGN t2 c
+DIV a b t3
+ASSIGN t3 c
+MOD a b t4
+ASSIGN t4 c
+ADD a b t5
+MUL t5 2 t6
+ASSIGN t6 c
+MUL b 2 t7
+ADD a t7 t8
+ASSIGN t8 c
+RETURN c
+FUNC_END

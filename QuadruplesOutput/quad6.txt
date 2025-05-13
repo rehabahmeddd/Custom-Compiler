@@ -1,0 +1,20 @@
+FUNC_BEGIN main
+ASSIGN 0 i
+ASSIGN 0 sum
+LABEL L0
+ADD sum i t0
+ASSIGN t0 sum
+ADD i 1 t1
+ASSIGN t1 i
+LT i 5 t2
+IF_TRUE t2 L0
+ASSIGN 10 i
+LABEL L1
+SUB sum 1 t3
+ASSIGN t3 sum
+SUB i 2 t4
+ASSIGN t4 i
+GT i 0 t5
+IF_TRUE t5 L1
+RETURN sum
+FUNC_END

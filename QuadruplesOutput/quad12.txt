@@ -1,0 +1,35 @@
+FUNC_BEGIN factorial
+LE n 1 t0
+IF_FALSE t0 L0
+RETURN 1
+LABEL L0
+SUB n 1 t1
+PARAM t1
+CALL factorial 1 t2
+MUL n t2 t3
+RETURN t3
+FUNC_END
+FUNC_BEGIN fibonacci
+LE n 1 t4
+IF_FALSE t4 L1
+RETURN n
+LABEL L1
+SUB n 1 t5
+PARAM t5
+CALL fibonacci 1 t6
+SUB n 2 t7
+PARAM t7
+CALL fibonacci 1 t8
+ADD t6 t8 t9
+RETURN t9
+FUNC_END
+FUNC_BEGIN main
+PARAM 5
+CALL factorial 1 t10
+ASSIGN t10 a
+PARAM 6
+CALL fibonacci 1 t11
+ASSIGN t11 b
+ADD a b t12
+RETURN t12
+FUNC_END

@@ -1,0 +1,36 @@
+FUNC_BEGIN add
+ADD a b t0
+RETURN t0
+FUNC_END
+FUNC_BEGIN multiply
+MUL a b t1
+RETURN t1
+FUNC_END
+FUNC_BEGIN compute
+PARAM x
+PARAM y
+CALL add 2 t2
+ASSIGN t2 result
+PARAM result
+PARAM 2
+CALL multiply 2 t3
+ASSIGN t3 result
+RETURN result
+FUNC_END
+FUNC_BEGIN main
+ASSIGN 5 a
+ASSIGN 10 b
+PARAM a
+PARAM b
+CALL add 2 t4
+ASSIGN t4 result
+PARAM result
+PARAM 3
+CALL multiply 2 t5
+ASSIGN t5 result
+PARAM a
+PARAM b
+CALL compute 2 t6
+ASSIGN t6 result
+RETURN result
+FUNC_END

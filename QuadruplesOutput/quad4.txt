@@ -1,0 +1,34 @@
+FUNC_BEGIN main
+ASSIGN 10 x
+ASSIGN 20 y
+ASSIGN 0 result
+GT x y t0
+IF_FALSE t0 L0
+ASSIGN x result
+GOTO L1
+LABEL L0
+ASSIGN y result
+LABEL L1
+EQ x 10 t1
+IF_FALSE t1 L2
+ADD result 5 t2
+ASSIGN t2 result
+LABEL L2
+LT y 10 t3
+IF_FALSE t3 L3
+ADD result 1 t4
+ASSIGN t4 result
+GOTO L4
+LABEL L3
+LT y 15 t5
+IF_FALSE t5 L5
+ADD result 2 t6
+ASSIGN t6 result
+GOTO L6
+LABEL L5
+ADD result 3 t7
+ASSIGN t7 result
+LABEL L6
+LABEL L4
+RETURN result
+FUNC_END
