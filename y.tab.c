@@ -790,15 +790,15 @@ static const yytype_int16 yyrline[] =
 {
        0,    91,    91,    91,   103,   104,   108,   109,   113,   121,
      131,   144,   145,   146,   147,   148,   149,   150,   155,   154,
-     192,   193,   197,   198,   202,   211,   210,   231,   232,   236,
-     237,   241,   249,   259,   272,   273,   274,   275,   276,   280,
-     281,   285,   297,   313,   327,   328,   332,   341,   350,   351,
-     355,   368,   380,   380,   385,   404,   405,   409,   413,   417,
-     423,   432,   436,   437,   455,   456,   467,   468,   479,   480,
-     488,   499,   500,   508,   516,   524,   535,   536,   544,   555,
-     556,   564,   572,   583,   584,   592,   603,   604,   608,   622,
-     627,   632,   637,   641,   645,   649,   653,   669,   670,   674,
-     678
+     191,   192,   196,   197,   201,   210,   209,   230,   231,   235,
+     236,   240,   248,   258,   271,   272,   273,   274,   275,   279,
+     280,   284,   294,   320,   334,   335,   339,   348,   357,   358,
+     362,   375,   387,   387,   392,   411,   412,   416,   420,   424,
+     430,   439,   443,   444,   462,   463,   474,   475,   486,   487,
+     495,   506,   507,   515,   523,   531,   542,   543,   551,   562,
+     563,   571,   579,   590,   591,   599,   610,   611,   615,   629,
+     634,   639,   644,   648,   652,   656,   660,   676,   677,   681,
+     685
 };
 #endif
 
@@ -1616,40 +1616,44 @@ yyreduce:
         current_scope = create_scope(current_scope);    // New scope for parameters + body
 
         // Generate function label - DO THIS FIRST
-        int first_quad = quad_count;
+        //int first_quad = quad_count;
         gen_quad(OP_LABEL, (yyvsp[-1].sval), NULL, NULL);
         
         // Reorder this quad to be at the beginning
-        if (first_quad > 0) {
-            Quadruple temp = quads[first_quad];
-            for (int i = first_quad; i > 0; i--) {
-                quads[i] = quads[i-1];
-            }
-            quads[0] = temp;
-        }
-    
-      // Only generate return if the last instruction is not already a return
-        // This check prevents duplicate returns
+        //if (first_quad > 0) {
+            //Quadruple temp = quads[first_quad];
+            //for (int i = first_quad; i > 0; i--) {
+                //quads[i] = quads[i-1];
+            //}
+            //quads[0] = temp;
+        //}
+    }
+#line 1632 "y.tab.c"
+    break;
+
+  case 19: /* function_definition: type_specifier ID LPAREN $@2 parameters RPAREN compound_statement  */
+#line 178 "parser.y"
+    {
         int last_quad_idx = quad_count - 1;
         if (last_quad_idx >= 0 && quads[last_quad_idx].op != OP_RETURN) {
             gen_quad(OP_RETURN, NULL, NULL, NULL);
         }
     }
-#line 1639 "y.tab.c"
+#line 1643 "y.tab.c"
     break;
 
   case 24: /* parameter: type_specifier ID  */
-#line 202 "parser.y"
+#line 201 "parser.y"
                       {
         insert_symbol(current_scope, (yyvsp[0].sval), (yyvsp[-1].dtype), KIND_PARAMETER, false);
         set_initialized(current_scope,(yyvsp[0].sval));
         printf("Parameter: %s\n", (yyvsp[0].sval));
     }
-#line 1649 "y.tab.c"
+#line 1653 "y.tab.c"
     break;
 
   case 25: /* $@3: %empty  */
-#line 211 "parser.y"
+#line 210 "parser.y"
     {
         if (!is_function_body) {
             // Only create a new scope for non-function blocks (loops/if)
@@ -1659,22 +1663,22 @@ yyreduce:
         {is_function_body=0;}
         
     }
-#line 1663 "y.tab.c"
+#line 1667 "y.tab.c"
     break;
 
   case 26: /* compound_statement: LBRACE $@3 block_item_list RBRACE  */
-#line 222 "parser.y"
+#line 221 "parser.y"
     {
        
             // Only leave scope for non-function blocks
             leave_scope(&current_scope);
         
     }
-#line 1674 "y.tab.c"
+#line 1678 "y.tab.c"
     break;
 
   case 31: /* declaration: type_specifier ID SEMICOLON  */
-#line 241 "parser.y"
+#line 240 "parser.y"
                                 {
         insert_symbol(current_scope, (yyvsp[-1].sval), (yyvsp[-2].dtype), KIND_VAR, false);
         
@@ -1683,11 +1687,11 @@ yyreduce:
         
         printf("Local Declaration: %s\n", (yyvsp[-1].sval));
     }
-#line 1687 "y.tab.c"
+#line 1691 "y.tab.c"
     break;
 
   case 32: /* declaration: type_specifier ID ASSIGN expression SEMICOLON  */
-#line 249 "parser.y"
+#line 248 "parser.y"
                                                     {
         insert_symbol(current_scope, (yyvsp[-3].sval), (yyvsp[-4].dtype), KIND_VAR, false);
         set_initialized(current_scope,(yyvsp[-3].sval));
@@ -1698,11 +1702,11 @@ yyreduce:
         
         printf("Local Declaration with assignment: %s\n", (yyvsp[-3].sval));
     }
-#line 1702 "y.tab.c"
+#line 1706 "y.tab.c"
     break;
 
   case 33: /* declaration: CONST type_specifier ID ASSIGN expression SEMICOLON  */
-#line 259 "parser.y"
+#line 258 "parser.y"
                                                           {
         insert_symbol(current_scope, (yyvsp[-3].sval), (yyvsp[-4].dtype), KIND_VAR, true);
         set_initialized(current_scope,(yyvsp[-3].sval));
@@ -1713,49 +1717,57 @@ yyreduce:
         
         printf("Local Constant declaration: %s\n", (yyvsp[-3].sval));
     }
-#line 1717 "y.tab.c"
+#line 1721 "y.tab.c"
     break;
 
   case 41: /* selection_statement: IF LPAREN expression RPAREN statement  */
-#line 285 "parser.y"
+#line 284 "parser.y"
                                                                 {
-        // Create label for false condition
+        // For simple if
         char* false_label = new_label();
-        
-        // Generate conditional jump
+        // Move the jump right after the condition
         gen_quad(OP_JMPF, (yyvsp[-2].sval), NULL, false_label);
-        
-        // Place label at the end
+        // Move the label to after the statement
         gen_quad(OP_LABEL, false_label, NULL, NULL);
         
         printf("If statement\n");
     }
-#line 1734 "y.tab.c"
+#line 1736 "y.tab.c"
     break;
 
   case 42: /* selection_statement: IF LPAREN expression RPAREN statement ELSE statement  */
-#line 297 "parser.y"
+#line 294 "parser.y"
                                                            {
         // If-else statement
-        // Create labels
         char* false_label = new_label();
         char* end_label = new_label();
         
-        // Generate jumps for condition and after 'then'
+        // 1. Generate condition check
+        // $3 is already generated by the expression rule
+        
+        // 2. Generate false jump (immediately after condition)
         gen_quad(OP_JMPF, (yyvsp[-4].sval), NULL, false_label);
+        
+        // 3. 'then' statement ($5) will be generated here automatically
+        
+        // 4. Jump over 'else' block
         gen_quad(OP_JMP, NULL, NULL, end_label);
         
-        // Insert labels
+        // 5. False label (start of else block)
         gen_quad(OP_LABEL, false_label, NULL, NULL);
+        
+        // 6. 'else' statement ($7) will be generated here automatically
+        
+        // 7. End label
         gen_quad(OP_LABEL, end_label, NULL, NULL);
         
         printf("If-else statement\n");
     }
-#line 1755 "y.tab.c"
+#line 1767 "y.tab.c"
     break;
 
   case 43: /* selection_statement: SWITCH LPAREN expression RPAREN LBRACE case_list RBRACE  */
-#line 313 "parser.y"
+#line 320 "parser.y"
                                                               {
         char* end_switch = new_label();
         old_break_label = break_label;
@@ -1767,11 +1779,11 @@ yyreduce:
         break_label = old_break_label;
         printf("Switch statement\n");
     }
-#line 1771 "y.tab.c"
+#line 1783 "y.tab.c"
     break;
 
   case 46: /* case: CASE INT COLON statement_list  */
-#line 332 "parser.y"
+#line 339 "parser.y"
                                   {
         // Generate case label
         char* case_label = new_label();
@@ -1781,22 +1793,22 @@ yyreduce:
 
         printf("Case: %d\n", (yyvsp[-2].ival));
     }
-#line 1785 "y.tab.c"
+#line 1797 "y.tab.c"
     break;
 
   case 47: /* case: DEFAULT COLON statement_list  */
-#line 341 "parser.y"
+#line 348 "parser.y"
                                    {
         // Generate default label
         char* default_label = new_label();
         gen_quad(OP_LABEL, default_label, NULL, NULL);
         printf("Default case\n");
     }
-#line 1796 "y.tab.c"
+#line 1808 "y.tab.c"
     break;
 
   case 50: /* iteration_statement: WHILE LPAREN expression RPAREN statement  */
-#line 355 "parser.y"
+#line 362 "parser.y"
                                              {
         // Create labels for loop
         char* start_label = new_label();
@@ -1810,11 +1822,11 @@ yyreduce:
         
         printf("While loop\n");
     }
-#line 1814 "y.tab.c"
+#line 1826 "y.tab.c"
     break;
 
   case 51: /* iteration_statement: DO statement WHILE LPAREN expression RPAREN SEMICOLON  */
-#line 368 "parser.y"
+#line 375 "parser.y"
                                                             {
         // Create labels for do-while loop
         char* start_label = new_label();
@@ -1827,23 +1839,23 @@ yyreduce:
         
         printf("Do-while loop\n");
     }
-#line 1831 "y.tab.c"
-    break;
-
-  case 52: /* $@4: %empty  */
-#line 380 "parser.y"
-                 { is_function_body = 1; current_scope = create_scope(current_scope);}
-#line 1837 "y.tab.c"
-    break;
-
-  case 53: /* iteration_statement: FOR LPAREN $@4 for_clause RPAREN statement  */
-#line 381 "parser.y"
-                                    {  printf("For loop\n"); }
 #line 1843 "y.tab.c"
     break;
 
+  case 52: /* $@4: %empty  */
+#line 387 "parser.y"
+                 { is_function_body = 1; current_scope = create_scope(current_scope);}
+#line 1849 "y.tab.c"
+    break;
+
+  case 53: /* iteration_statement: FOR LPAREN $@4 for_clause RPAREN statement  */
+#line 388 "parser.y"
+                                    {  printf("For loop\n"); }
+#line 1855 "y.tab.c"
+    break;
+
   case 54: /* for_clause: for_init_statement expression SEMICOLON expression  */
-#line 385 "parser.y"
+#line 392 "parser.y"
                                                       {
          // Create labels for for loop
         char* cond_label = new_label();
@@ -1859,63 +1871,63 @@ yyreduce:
         gen_quad(OP_JMP, NULL, NULL, cond_label);
         gen_quad(OP_LABEL, end_label, NULL, NULL);
     }
-#line 1863 "y.tab.c"
+#line 1875 "y.tab.c"
     break;
 
   case 57: /* jump_statement: RETURN expression SEMICOLON  */
-#line 409 "parser.y"
+#line 416 "parser.y"
                                 {
         gen_quad(OP_RETURN, (yyvsp[-1].sval), NULL, NULL);
         printf("Return statement\n");
     }
-#line 1872 "y.tab.c"
+#line 1884 "y.tab.c"
     break;
 
   case 58: /* jump_statement: RETURN SEMICOLON  */
-#line 413 "parser.y"
+#line 420 "parser.y"
                        {
         gen_quad(OP_RETURN, NULL, NULL, NULL);
         printf("Return void\n");
     }
-#line 1881 "y.tab.c"
+#line 1893 "y.tab.c"
     break;
 
   case 59: /* jump_statement: BREAK SEMICOLON  */
-#line 417 "parser.y"
+#line 424 "parser.y"
                       {
         if (break_label) {
             gen_quad(OP_JMP, NULL, NULL, break_label);
         }
         printf("Break statement\n");
     }
-#line 1892 "y.tab.c"
+#line 1904 "y.tab.c"
     break;
 
   case 60: /* jump_statement: CONTINUE SEMICOLON  */
-#line 423 "parser.y"
+#line 430 "parser.y"
                          {
         if (continue_label) {
             gen_quad(OP_JMP, NULL, NULL, continue_label);
         }
         printf("Continue statement\n");
     }
-#line 1903 "y.tab.c"
-    break;
-
-  case 61: /* expression: assignment_expression  */
-#line 432 "parser.y"
-                          { (yyval.sval) = (yyvsp[0].sval); }
-#line 1909 "y.tab.c"
-    break;
-
-  case 62: /* assignment_expression: logical_or_expression  */
-#line 436 "parser.y"
-                          { (yyval.sval) = (yyvsp[0].sval); }
 #line 1915 "y.tab.c"
     break;
 
+  case 61: /* expression: assignment_expression  */
+#line 439 "parser.y"
+                          { (yyval.sval) = (yyvsp[0].sval); }
+#line 1921 "y.tab.c"
+    break;
+
+  case 62: /* assignment_expression: logical_or_expression  */
+#line 443 "parser.y"
+                          { (yyval.sval) = (yyvsp[0].sval); }
+#line 1927 "y.tab.c"
+    break;
+
   case 63: /* assignment_expression: ID ASSIGN assignment_expression  */
-#line 437 "parser.y"
+#line 444 "parser.y"
                                       {
         Symbol* sym = lookup_symbol(current_scope, (yyvsp[-2].sval));
         if (sym == NULL) {
@@ -1931,17 +1943,17 @@ yyreduce:
         }
         (yyval.sval) = strdup((yyvsp[-2].sval));
     }
-#line 1935 "y.tab.c"
+#line 1947 "y.tab.c"
     break;
 
   case 64: /* logical_or_expression: logical_and_expression  */
-#line 455 "parser.y"
+#line 462 "parser.y"
                            { (yyval.sval) = (yyvsp[0].sval); }
-#line 1941 "y.tab.c"
+#line 1953 "y.tab.c"
     break;
 
   case 65: /* logical_or_expression: logical_or_expression OR logical_and_expression  */
-#line 456 "parser.y"
+#line 463 "parser.y"
                                                       { 
         // Generate OR operation
         char* temp = new_temp();
@@ -1950,17 +1962,17 @@ yyreduce:
         
         printf("Logical OR\n"); 
     }
-#line 1954 "y.tab.c"
+#line 1966 "y.tab.c"
     break;
 
   case 66: /* logical_and_expression: equality_expression  */
-#line 467 "parser.y"
+#line 474 "parser.y"
                         { (yyval.sval) = (yyvsp[0].sval); }
-#line 1960 "y.tab.c"
+#line 1972 "y.tab.c"
     break;
 
   case 67: /* logical_and_expression: logical_and_expression AND equality_expression  */
-#line 468 "parser.y"
+#line 475 "parser.y"
                                                      { 
         // Generate AND operation
         char* temp = new_temp();
@@ -1969,17 +1981,17 @@ yyreduce:
         
         printf("Logical AND\n"); 
     }
-#line 1973 "y.tab.c"
+#line 1985 "y.tab.c"
     break;
 
   case 68: /* equality_expression: relational_expression  */
-#line 479 "parser.y"
+#line 486 "parser.y"
                           { (yyval.sval) = (yyvsp[0].sval); }
-#line 1979 "y.tab.c"
+#line 1991 "y.tab.c"
     break;
 
   case 69: /* equality_expression: equality_expression EQ relational_expression  */
-#line 480 "parser.y"
+#line 487 "parser.y"
                                                    { 
         // Generate equality comparison
         char* temp = new_temp();
@@ -1988,11 +2000,11 @@ yyreduce:
         
         printf("Equality\n");
     }
-#line 1992 "y.tab.c"
+#line 2004 "y.tab.c"
     break;
 
   case 70: /* equality_expression: equality_expression NEQ relational_expression  */
-#line 488 "parser.y"
+#line 495 "parser.y"
                                                     {
         // Generate inequality comparison
         char* temp = new_temp();
@@ -2001,17 +2013,17 @@ yyreduce:
         
         printf("Not Equal\n");
     }
-#line 2005 "y.tab.c"
+#line 2017 "y.tab.c"
     break;
 
   case 71: /* relational_expression: additive_expression  */
-#line 499 "parser.y"
+#line 506 "parser.y"
                         { (yyval.sval) = (yyvsp[0].sval); }
-#line 2011 "y.tab.c"
+#line 2023 "y.tab.c"
     break;
 
   case 72: /* relational_expression: relational_expression LT additive_expression  */
-#line 500 "parser.y"
+#line 507 "parser.y"
                                                    { 
         // Generate less than comparison
         char* temp = new_temp();
@@ -2020,11 +2032,11 @@ yyreduce:
         
         printf("Less than\n"); 
     }
-#line 2024 "y.tab.c"
+#line 2036 "y.tab.c"
     break;
 
   case 73: /* relational_expression: relational_expression GT additive_expression  */
-#line 508 "parser.y"
+#line 515 "parser.y"
                                                    { 
         // Generate greater than comparison
         char* temp = new_temp();
@@ -2033,11 +2045,11 @@ yyreduce:
         
         printf("Greater than\n"); 
     }
-#line 2037 "y.tab.c"
+#line 2049 "y.tab.c"
     break;
 
   case 74: /* relational_expression: relational_expression LE additive_expression  */
-#line 516 "parser.y"
+#line 523 "parser.y"
                                                    { 
         // Generate less than or equal comparison
         char* temp = new_temp();
@@ -2046,11 +2058,11 @@ yyreduce:
         
         printf("Less than or equal\n"); 
     }
-#line 2050 "y.tab.c"
+#line 2062 "y.tab.c"
     break;
 
   case 75: /* relational_expression: relational_expression GE additive_expression  */
-#line 524 "parser.y"
+#line 531 "parser.y"
                                                    { 
         // Generate greater than or equal comparison
         char* temp = new_temp();
@@ -2059,17 +2071,17 @@ yyreduce:
         
         printf("Greater than or equal\n"); 
     }
-#line 2063 "y.tab.c"
+#line 2075 "y.tab.c"
     break;
 
   case 76: /* additive_expression: multiplicative_expr  */
-#line 535 "parser.y"
+#line 542 "parser.y"
                         { (yyval.sval) = (yyvsp[0].sval); }
-#line 2069 "y.tab.c"
+#line 2081 "y.tab.c"
     break;
 
   case 77: /* additive_expression: additive_expression ADD multiplicative_expr  */
-#line 536 "parser.y"
+#line 543 "parser.y"
                                                   { 
         // Generate addition
         char* temp = new_temp();
@@ -2078,11 +2090,11 @@ yyreduce:
         
         printf("Addition\n"); 
     }
-#line 2082 "y.tab.c"
+#line 2094 "y.tab.c"
     break;
 
   case 78: /* additive_expression: additive_expression SUB multiplicative_expr  */
-#line 544 "parser.y"
+#line 551 "parser.y"
                                                   { 
         // Generate subtraction
         char* temp = new_temp();
@@ -2091,17 +2103,17 @@ yyreduce:
         
         printf("Subtraction\n"); 
     }
-#line 2095 "y.tab.c"
+#line 2107 "y.tab.c"
     break;
 
   case 79: /* multiplicative_expr: unary_expr  */
-#line 555 "parser.y"
+#line 562 "parser.y"
                { (yyval.sval) = (yyvsp[0].sval); }
-#line 2101 "y.tab.c"
+#line 2113 "y.tab.c"
     break;
 
   case 80: /* multiplicative_expr: multiplicative_expr MUL unary_expr  */
-#line 556 "parser.y"
+#line 563 "parser.y"
                                          { 
         // Generate multiplication
         char* temp = new_temp();
@@ -2110,11 +2122,11 @@ yyreduce:
         
         printf("Multiplication\n"); 
     }
-#line 2114 "y.tab.c"
+#line 2126 "y.tab.c"
     break;
 
   case 81: /* multiplicative_expr: multiplicative_expr DIV unary_expr  */
-#line 564 "parser.y"
+#line 571 "parser.y"
                                          { 
         // Generate division
         char* temp = new_temp();
@@ -2123,11 +2135,11 @@ yyreduce:
         
         printf("Division\n"); 
     }
-#line 2127 "y.tab.c"
+#line 2139 "y.tab.c"
     break;
 
   case 82: /* multiplicative_expr: multiplicative_expr MOD unary_expr  */
-#line 572 "parser.y"
+#line 579 "parser.y"
                                          { 
         // Generate modulo
         char* temp = new_temp();
@@ -2136,17 +2148,17 @@ yyreduce:
         
         printf("Modulo\n"); 
     }
-#line 2140 "y.tab.c"
+#line 2152 "y.tab.c"
     break;
 
   case 83: /* unary_expr: postfix_expression  */
-#line 583 "parser.y"
+#line 590 "parser.y"
                        { (yyval.sval) = (yyvsp[0].sval); }
-#line 2146 "y.tab.c"
+#line 2158 "y.tab.c"
     break;
 
   case 84: /* unary_expr: NOT unary_expr  */
-#line 584 "parser.y"
+#line 591 "parser.y"
                      { 
         // Generate logical NOT
         char* temp = new_temp();
@@ -2155,11 +2167,11 @@ yyreduce:
         
         printf("Logical NOT\n"); 
     }
-#line 2159 "y.tab.c"
+#line 2171 "y.tab.c"
     break;
 
   case 85: /* unary_expr: SUB unary_expr  */
-#line 592 "parser.y"
+#line 599 "parser.y"
                      { 
         // Generate unary minus
         char* temp = new_temp();
@@ -2168,23 +2180,23 @@ yyreduce:
         
         printf("Unary minus\n"); 
     }
-#line 2172 "y.tab.c"
-    break;
-
-  case 86: /* postfix_expression: primary_expr  */
-#line 603 "parser.y"
-                 { (yyval.sval) = (yyvsp[0].sval); }
-#line 2178 "y.tab.c"
-    break;
-
-  case 87: /* postfix_expression: function_call  */
-#line 604 "parser.y"
-                    { (yyval.sval) = (yyvsp[0].sval); }
 #line 2184 "y.tab.c"
     break;
 
+  case 86: /* postfix_expression: primary_expr  */
+#line 610 "parser.y"
+                 { (yyval.sval) = (yyvsp[0].sval); }
+#line 2190 "y.tab.c"
+    break;
+
+  case 87: /* postfix_expression: function_call  */
+#line 611 "parser.y"
+                    { (yyval.sval) = (yyvsp[0].sval); }
+#line 2196 "y.tab.c"
+    break;
+
   case 88: /* primary_expr: ID  */
-#line 608 "parser.y"
+#line 615 "parser.y"
        {
         Symbol* sym = lookup_symbol(current_scope, (yyvsp[0].sval));
         const char* name=get_symbol_name(sym);
@@ -2199,74 +2211,74 @@ yyreduce:
         (yyval.sval) = strdup((yyvsp[0].sval));
         printf("Primary ID: %s\n", (yyvsp[0].sval));
     }
-#line 2203 "y.tab.c"
+#line 2215 "y.tab.c"
     break;
 
   case 89: /* primary_expr: INT  */
-#line 622 "parser.y"
+#line 629 "parser.y"
           { 
         // Convert INT to string
         (yyval.sval) = int_to_str((yyvsp[0].ival));
         printf("Primary int: %d\n", (yyvsp[0].ival)); 
     }
-#line 2213 "y.tab.c"
+#line 2225 "y.tab.c"
     break;
 
   case 90: /* primary_expr: FLOAT  */
-#line 627 "parser.y"
+#line 634 "parser.y"
             { 
         // Convert FLOAT to string
         (yyval.sval) = float_to_str((yyvsp[0].fval));
         printf("Primary float: %f\n", (yyvsp[0].fval)); 
     }
-#line 2223 "y.tab.c"
+#line 2235 "y.tab.c"
     break;
 
   case 91: /* primary_expr: DOUBLE  */
-#line 632 "parser.y"
+#line 639 "parser.y"
              { 
         // Convert DOUBLE to string
         (yyval.sval) = double_to_str((yyvsp[0].fval));
         printf("Primary double: %f\n", (yyvsp[0].fval)); 
     }
-#line 2233 "y.tab.c"
+#line 2245 "y.tab.c"
     break;
 
   case 92: /* primary_expr: STRING  */
-#line 637 "parser.y"
+#line 644 "parser.y"
              { 
         (yyval.sval) = strdup((yyvsp[0].sval));
         printf("Primary string: %s\n", (yyvsp[0].sval)); 
     }
-#line 2242 "y.tab.c"
+#line 2254 "y.tab.c"
     break;
 
   case 93: /* primary_expr: CHAR  */
-#line 641 "parser.y"
+#line 648 "parser.y"
            { 
         (yyval.sval) = strdup((yyvsp[0].sval));
         printf("Primary char: %c\n", (yyvsp[0].sval)[1]); 
     }
-#line 2251 "y.tab.c"
+#line 2263 "y.tab.c"
     break;
 
   case 94: /* primary_expr: BOOL  */
-#line 645 "parser.y"
+#line 652 "parser.y"
            { 
         (yyval.sval) = bool_to_str((yyvsp[0].bval));
         printf("Primary bool: %s\n", (yyvsp[0].bval) ? "true" : "false"); 
     }
-#line 2260 "y.tab.c"
+#line 2272 "y.tab.c"
     break;
 
   case 95: /* primary_expr: LPAREN expression RPAREN  */
-#line 649 "parser.y"
+#line 656 "parser.y"
                                { (yyval.sval) = (yyvsp[-1].sval); }
-#line 2266 "y.tab.c"
+#line 2278 "y.tab.c"
     break;
 
   case 96: /* function_call: ID LPAREN argument_list RPAREN  */
-#line 653 "parser.y"
+#line 660 "parser.y"
                                    {
         Symbol* sym = lookup_symbol(current_scope, (yyvsp[-3].sval));
         if (!sym || sym->kind != KIND_FUNCTION) {
@@ -2280,29 +2292,29 @@ yyreduce:
         
         printf("Function call to: %s\n", (yyvsp[-3].sval));
     }
-#line 2284 "y.tab.c"
+#line 2296 "y.tab.c"
     break;
 
   case 99: /* argument_expr_list: argument_expr_list COMMA expression  */
-#line 674 "parser.y"
+#line 681 "parser.y"
                                         {
         // Generate parameter quadruple
         gen_quad(OP_PARAM, (yyvsp[0].sval), NULL, NULL);
     }
-#line 2293 "y.tab.c"
+#line 2305 "y.tab.c"
     break;
 
   case 100: /* argument_expr_list: expression  */
-#line 678 "parser.y"
+#line 685 "parser.y"
                  {
         // Generate parameter quadruple
         gen_quad(OP_PARAM, (yyvsp[0].sval), NULL, NULL);
     }
-#line 2302 "y.tab.c"
+#line 2314 "y.tab.c"
     break;
 
 
-#line 2306 "y.tab.c"
+#line 2318 "y.tab.c"
 
       default: break;
     }
@@ -2495,7 +2507,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 684 "parser.y"
+#line 691 "parser.y"
 
 
 int main(int argc, char* argv[]) {
