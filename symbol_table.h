@@ -37,6 +37,7 @@ typedef struct Symbol {
     bool constant;
     void* value;
     bool is_used;
+    char* type_name;
 
     struct Scope* scope;  // The scope in which the symbol is defined
     struct Symbol* next;  // Linked list of symbols in the same scope

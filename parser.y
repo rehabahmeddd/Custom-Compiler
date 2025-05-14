@@ -576,6 +576,7 @@ logical_or_expression:
         }
 
         $$ = quad_gen_logic(quad_handler, OP_OR, $1, $3);
+
         
         printf("Logical OR\n"); 
     }
@@ -593,6 +594,7 @@ logical_and_expression:
         }
         $$ = quad_gen_logic(quad_handler, OP_AND, $1, $3);
         printf("Logical AND\n"); 
+
     }
 ;
 
@@ -823,7 +825,6 @@ function_call:
         num_call_parameters = 0;
     } argument_list RPAREN {
         Symbol* sym = lookup_symbol(current_scope, $1);
-        char* temp = NULL;
         if (!sym || sym->kind != KIND_FUNCTION) {
             fprintf(stderr, "Semantic Error at line %d: Undefined function %s\n", line_number,$1);
             exit(1);
@@ -838,10 +839,9 @@ function_call:
                 char* temp = quad_new_temp(quad_handler, sym->type);
                 num_call_parameters = $4;
 
-               
-
                 // Add parameters
-                for (int i = 0; i < num_call_parameters; i++) {
+                for (int i = 0; i < arg_count; i++) {
+  
                     quad_add_param(quad_handler, function_call_parameters[i]->name);
                 }
 
@@ -856,7 +856,7 @@ function_call:
                 }
 
                 // Call the function
-                quad_add_call(quad_handler, sym->name, num_call_parameters, temp);
+                quad_add_call(quad_handler, sym->name, arg_count, temp);
 
                 // Create and return a symbol for the result
                 Symbol* result = (Symbol*)malloc(sizeof(Symbol));

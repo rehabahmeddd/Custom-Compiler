@@ -831,10 +831,10 @@ static const yytype_int16 yyrline[] =
      301,   306,   313,   318,   318,   331,   331,   351,   352,   356,
      356,   386,   386,   395,   396,   401,   401,   419,   433,   433,
      448,   448,   468,   489,   490,   494,   507,   515,   525,   537,
-     541,   542,   568,   569,   585,   586,   600,   601,   612,   626,
-     627,   638,   649,   660,   674,   675,   686,   700,   701,   712,
-     723,   737,   738,   748,   762,   763,   767,   785,   792,   799,
-     806,   810,   814,   818,   822,   822,   884,   885,   889,   894
+     541,   542,   568,   569,   586,   587,   602,   603,   614,   628,
+     629,   640,   651,   662,   676,   677,   688,   702,   703,   714,
+     725,   739,   740,   750,   764,   765,   769,   787,   794,   801,
+     808,   812,   816,   820,   824,   824,   884,   885,   889,   894
 };
 #endif
 
@@ -2126,20 +2126,21 @@ yyreduce:
         }
 
         (yyval.sym) = quad_gen_logic(quad_handler, OP_OR, (yyvsp[-2].sym), (yyvsp[0].sym));
+
         
         printf("Logical OR\n"); 
     }
-#line 2133 "y.tab.c"
+#line 2134 "y.tab.c"
     break;
 
   case 74: /* logical_and_expression: equality_expression  */
-#line 585 "parser.y"
+#line 586 "parser.y"
                         { (yyval.sym) = (yyvsp[0].sym); }
-#line 2139 "y.tab.c"
+#line 2140 "y.tab.c"
     break;
 
   case 75: /* logical_and_expression: logical_and_expression AND equality_expression  */
-#line 586 "parser.y"
+#line 587 "parser.y"
                                                      { 
         DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sym)->name);
         DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sym)->name);
@@ -2150,18 +2151,19 @@ yyreduce:
         }
         (yyval.sym) = quad_gen_logic(quad_handler, OP_AND, (yyvsp[-2].sym), (yyvsp[0].sym));
         printf("Logical AND\n"); 
+
     }
-#line 2155 "y.tab.c"
+#line 2157 "y.tab.c"
     break;
 
   case 76: /* equality_expression: relational_expression  */
-#line 600 "parser.y"
+#line 602 "parser.y"
                           { (yyval.sym) = (yyvsp[0].sym); }
-#line 2161 "y.tab.c"
+#line 2163 "y.tab.c"
     break;
 
   case 77: /* equality_expression: equality_expression EQ relational_expression  */
-#line 601 "parser.y"
+#line 603 "parser.y"
                                                    { 
         DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sym)->name);
         DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sym)->name);
@@ -2173,11 +2175,11 @@ yyreduce:
         (yyval.sym) = quad_gen_rel(quad_handler, OP_EQ, (yyvsp[-2].sym), (yyvsp[0].sym));
         printf("Equality\n");
     }
-#line 2177 "y.tab.c"
+#line 2179 "y.tab.c"
     break;
 
   case 78: /* equality_expression: equality_expression NEQ relational_expression  */
-#line 612 "parser.y"
+#line 614 "parser.y"
                                                     {
         DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sym)->name);
         DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sym)->name);
@@ -2189,17 +2191,17 @@ yyreduce:
         (yyval.sym) = quad_gen_rel(quad_handler, OP_NEQ, (yyvsp[-2].sym), (yyvsp[0].sym));
         printf("Not Equal\n");
     }
-#line 2193 "y.tab.c"
+#line 2195 "y.tab.c"
     break;
 
   case 79: /* relational_expression: additive_expression  */
-#line 626 "parser.y"
+#line 628 "parser.y"
                         { (yyval.sym) = (yyvsp[0].sym); }
-#line 2199 "y.tab.c"
+#line 2201 "y.tab.c"
     break;
 
   case 80: /* relational_expression: relational_expression LT additive_expression  */
-#line 627 "parser.y"
+#line 629 "parser.y"
                                                    { 
         DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sym)->name);
         DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sym)->name);
@@ -2211,11 +2213,11 @@ yyreduce:
         (yyval.sym) = quad_gen_rel(quad_handler, OP_LT, (yyvsp[-2].sym), (yyvsp[0].sym));
         printf("Less than\n"); 
     }
-#line 2215 "y.tab.c"
+#line 2217 "y.tab.c"
     break;
 
   case 81: /* relational_expression: relational_expression GT additive_expression  */
-#line 638 "parser.y"
+#line 640 "parser.y"
                                                    { 
         DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sym)->name);
         DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sym)->name);
@@ -2227,11 +2229,11 @@ yyreduce:
         (yyval.sym) = quad_gen_rel(quad_handler, OP_GT, (yyvsp[-2].sym), (yyvsp[0].sym));
         printf("Greater than\n"); 
     }
-#line 2231 "y.tab.c"
+#line 2233 "y.tab.c"
     break;
 
   case 82: /* relational_expression: relational_expression LE additive_expression  */
-#line 649 "parser.y"
+#line 651 "parser.y"
                                                    { 
         DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sym)->name);
         DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sym)->name);
@@ -2243,11 +2245,11 @@ yyreduce:
         (yyval.sym) = quad_gen_rel(quad_handler, OP_LE, (yyvsp[-2].sym), (yyvsp[0].sym));
         printf("Less than or equal\n"); 
     }
-#line 2247 "y.tab.c"
+#line 2249 "y.tab.c"
     break;
 
   case 83: /* relational_expression: relational_expression GE additive_expression  */
-#line 660 "parser.y"
+#line 662 "parser.y"
                                                    { 
         DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sym)->name);
         DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sym)->name);
@@ -2259,17 +2261,17 @@ yyreduce:
         (yyval.sym) = quad_gen_rel(quad_handler, OP_GE, (yyvsp[-2].sym), (yyvsp[0].sym));
         printf("Greater than or equal\n"); 
     }
-#line 2263 "y.tab.c"
+#line 2265 "y.tab.c"
     break;
 
   case 84: /* additive_expression: multiplicative_expr  */
-#line 674 "parser.y"
+#line 676 "parser.y"
                         { (yyval.sym) = (yyvsp[0].sym); }
-#line 2269 "y.tab.c"
+#line 2271 "y.tab.c"
     break;
 
   case 85: /* additive_expression: additive_expression ADD multiplicative_expr  */
-#line 675 "parser.y"
+#line 677 "parser.y"
                                                   { 
         DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sym)->name);
         DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sym)->name);
@@ -2281,11 +2283,11 @@ yyreduce:
         (yyval.sym) = quad_gen_math(quad_handler, OP_ADD, (yyvsp[-2].sym), (yyvsp[0].sym));
         printf("Addition\n"); 
     }
-#line 2285 "y.tab.c"
+#line 2287 "y.tab.c"
     break;
 
   case 86: /* additive_expression: additive_expression SUB multiplicative_expr  */
-#line 686 "parser.y"
+#line 688 "parser.y"
                                                   { 
         DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sym)->name);
         DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sym)->name);
@@ -2297,17 +2299,17 @@ yyreduce:
         (yyval.sym) = quad_gen_math(quad_handler, OP_SUB, (yyvsp[-2].sym), (yyvsp[0].sym));
         printf("Subtraction\n"); 
     }
-#line 2301 "y.tab.c"
+#line 2303 "y.tab.c"
     break;
 
   case 87: /* multiplicative_expr: unary_expr  */
-#line 700 "parser.y"
+#line 702 "parser.y"
                { (yyval.sym) = (yyvsp[0].sym); }
-#line 2307 "y.tab.c"
+#line 2309 "y.tab.c"
     break;
 
   case 88: /* multiplicative_expr: multiplicative_expr MUL unary_expr  */
-#line 701 "parser.y"
+#line 703 "parser.y"
                                          { 
         DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sym)->name);
         DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sym)->name);
@@ -2319,11 +2321,11 @@ yyreduce:
         (yyval.sym) = quad_gen_math(quad_handler, OP_MUL, (yyvsp[-2].sym), (yyvsp[0].sym));
         printf("Multiplication\n"); 
     }
-#line 2323 "y.tab.c"
+#line 2325 "y.tab.c"
     break;
 
   case 89: /* multiplicative_expr: multiplicative_expr DIV unary_expr  */
-#line 712 "parser.y"
+#line 714 "parser.y"
                                          { 
         DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sym)->name);
         DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sym)->name);
@@ -2335,11 +2337,11 @@ yyreduce:
         (yyval.sym) = quad_gen_math(quad_handler, OP_DIV, (yyvsp[-2].sym), (yyvsp[0].sym));
         printf("Division\n"); 
     }
-#line 2339 "y.tab.c"
+#line 2341 "y.tab.c"
     break;
 
   case 90: /* multiplicative_expr: multiplicative_expr MOD unary_expr  */
-#line 723 "parser.y"
+#line 725 "parser.y"
                                          { 
         DataType leftType = infer_expr_type(current_scope,(yyvsp[-2].sym)->name);
         DataType rightType = infer_expr_type(current_scope,(yyvsp[0].sym)->name);
@@ -2351,17 +2353,17 @@ yyreduce:
         (yyval.sym) = quad_gen_math(quad_handler, OP_MOD, (yyvsp[-2].sym), (yyvsp[0].sym));
         printf("Modulo\n"); 
     }
-#line 2355 "y.tab.c"
+#line 2357 "y.tab.c"
     break;
 
   case 91: /* unary_expr: postfix_expression  */
-#line 737 "parser.y"
+#line 739 "parser.y"
                        { (yyval.sym) = (yyvsp[0].sym); }
-#line 2361 "y.tab.c"
+#line 2363 "y.tab.c"
     break;
 
   case 92: /* unary_expr: NOT unary_expr  */
-#line 738 "parser.y"
+#line 740 "parser.y"
                      { 
         DataType leftType = infer_expr_type(current_scope,(yyvsp[0].sym)->name);
         if (!areTypesCompatibleForOp(leftType, TYPE_BOOL, "!")) {
@@ -2372,11 +2374,11 @@ yyreduce:
         (yyval.sym) = quad_gen_logic(quad_handler, OP_NOT, (yyvsp[0].sym), NULL);
         printf("Logical NOT\n"); 
     }
-#line 2376 "y.tab.c"
+#line 2378 "y.tab.c"
     break;
 
   case 93: /* unary_expr: SUB unary_expr  */
-#line 748 "parser.y"
+#line 750 "parser.y"
                      { 
         DataType leftType = infer_expr_type(current_scope,(yyvsp[0].sym)->name);
         if (!areTypesCompatibleForOp(leftType, TYPE_INT, "-")) {
@@ -2388,23 +2390,23 @@ yyreduce:
         (yyval.sym) = quad_gen_math(quad_handler, OP_SUB, zero, (yyvsp[0].sym));
         printf("Unary minus\n"); 
     }
-#line 2392 "y.tab.c"
+#line 2394 "y.tab.c"
     break;
 
   case 94: /* postfix_expression: primary_expr  */
-#line 762 "parser.y"
+#line 764 "parser.y"
                  { (yyval.sym) = (yyvsp[0].sym); }
-#line 2398 "y.tab.c"
+#line 2400 "y.tab.c"
     break;
 
   case 95: /* postfix_expression: function_call  */
-#line 763 "parser.y"
+#line 765 "parser.y"
                     { (yyval.sym) = (yyvsp[0].sym); }
-#line 2404 "y.tab.c"
+#line 2406 "y.tab.c"
     break;
 
   case 96: /* primary_expr: ID  */
-#line 767 "parser.y"
+#line 769 "parser.y"
        {
         Symbol* sym = lookup_symbol(current_scope, (yyvsp[0].sval));
         const char* name=get_symbol_name(sym);
@@ -2423,11 +2425,11 @@ yyreduce:
         (yyval.sym) = sym;
         printf("Primary ID: %s\n", (yyvsp[0].sval));
     }
-#line 2427 "y.tab.c"
+#line 2429 "y.tab.c"
     break;
 
   case 97: /* primary_expr: INT  */
-#line 785 "parser.y"
+#line 787 "parser.y"
           { 
         // Convert INT to string
         char value[20];
@@ -2435,11 +2437,11 @@ yyreduce:
         (yyval.sym) = create_quad_symbol(value, TYPE_INT);
         printf("Primary int: %d\n", (yyvsp[0].ival)); 
     }
-#line 2439 "y.tab.c"
+#line 2441 "y.tab.c"
     break;
 
   case 98: /* primary_expr: FLOAT  */
-#line 792 "parser.y"
+#line 794 "parser.y"
             { 
        // Convert FLOAT to string
        char value[20];
@@ -2447,11 +2449,11 @@ yyreduce:
        (yyval.sym) = create_quad_symbol(value, TYPE_FLOAT);
         printf("Primary float: %f\n", (yyvsp[0].fval)); 
     }
-#line 2451 "y.tab.c"
+#line 2453 "y.tab.c"
     break;
 
   case 99: /* primary_expr: DOUBLE  */
-#line 799 "parser.y"
+#line 801 "parser.y"
              { 
         // Convert DOUBLE to string
         char value[20];
@@ -2459,55 +2461,54 @@ yyreduce:
         (yyval.sym) = create_quad_symbol(value, TYPE_DOUBLE);
         printf("Primary double: %f\n", (yyvsp[0].fval)); 
     }
-#line 2463 "y.tab.c"
+#line 2465 "y.tab.c"
     break;
 
   case 100: /* primary_expr: STRING  */
-#line 806 "parser.y"
+#line 808 "parser.y"
              { 
         (yyval.sym) = create_quad_symbol((yyvsp[0].sval), TYPE_STRING);
         printf("Primary string: %s\n", (yyvsp[0].sval)); 
     }
-#line 2472 "y.tab.c"
+#line 2474 "y.tab.c"
     break;
 
   case 101: /* primary_expr: CHAR  */
-#line 810 "parser.y"
+#line 812 "parser.y"
            { 
         (yyval.sym) = create_quad_symbol((yyvsp[0].sval), TYPE_CHAR);
         printf("Primary char: %c\n", (yyvsp[0].sval)[1]); 
     }
-#line 2481 "y.tab.c"
+#line 2483 "y.tab.c"
     break;
 
   case 102: /* primary_expr: BOOL  */
-#line 814 "parser.y"
+#line 816 "parser.y"
            { 
         (yyval.sym) = create_quad_symbol((yyvsp[0].bval) ? "true" : "false", TYPE_BOOL);
         printf("Primary bool: %s\n", (yyvsp[0].bval) ? "true" : "false"); 
     }
-#line 2490 "y.tab.c"
+#line 2492 "y.tab.c"
     break;
 
   case 103: /* primary_expr: LPAREN expression RPAREN  */
-#line 818 "parser.y"
+#line 820 "parser.y"
                                { (yyval.sym) = (yyvsp[-1].sym); }
-#line 2496 "y.tab.c"
+#line 2498 "y.tab.c"
     break;
 
   case 104: /* $@11: %empty  */
-#line 822 "parser.y"
+#line 824 "parser.y"
               {
         num_call_parameters = 0;
     }
-#line 2504 "y.tab.c"
+#line 2506 "y.tab.c"
     break;
 
   case 105: /* function_call: ID LPAREN $@11 argument_list RPAREN  */
-#line 824 "parser.y"
+#line 826 "parser.y"
                            {
         Symbol* sym = lookup_symbol(current_scope, (yyvsp[-4].sval));
-        char* temp = NULL;
         if (!sym || sym->kind != KIND_FUNCTION) {
             fprintf(stderr, "Semantic Error at line %d: Undefined function %s\n", line_number,(yyvsp[-4].sval));
             exit(1);
@@ -2522,10 +2523,9 @@ yyreduce:
                 char* temp = quad_new_temp(quad_handler, sym->type);
                 num_call_parameters = (yyvsp[-1].ival);
 
-               
-
                 // Add parameters
-                for (int i = 0; i < num_call_parameters; i++) {
+                for (int i = 0; i < arg_count; i++) {
+  
                     quad_add_param(quad_handler, function_call_parameters[i]->name);
                 }
 
@@ -2540,7 +2540,7 @@ yyreduce:
                 }
 
                 // Call the function
-                quad_add_call(quad_handler, sym->name, num_call_parameters, temp);
+                quad_add_call(quad_handler, sym->name, arg_count, temp);
 
                 // Create and return a symbol for the result
                 Symbol* result = (Symbol*)malloc(sizeof(Symbol));

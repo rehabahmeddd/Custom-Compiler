@@ -1,5 +1,5 @@
 
-#line 2 "lex.yy.c"
+#line 3 "lex.yy.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -547,11 +547,11 @@ char *yytext;
 void yyerror(const char *s);
 
 int line_number = 1;
-#line 550 "lex.yy.c"
+#line 551 "lex.yy.c"
 /* Disable unused functions to avoid warnings */
 #define YY_NO_INPUT 1
 /* Regular Definitions */
-#line 554 "lex.yy.c"
+#line 555 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -769,7 +769,7 @@ YY_DECL
 #line 32 "lexer.l"
 
 
-#line 772 "lex.yy.c"
+#line 773 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1143,7 +1143,7 @@ YY_RULE_SETUP
 #line 134 "lexer.l"
 ECHO;
 	YY_BREAK
-#line 1146 "lex.yy.c"
+#line 1147 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 

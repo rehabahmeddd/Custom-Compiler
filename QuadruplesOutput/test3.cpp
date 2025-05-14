@@ -2,7 +2,7 @@ int main() {
     int a = 5;
     int b = 10;
     bool result;
-    
+
     result = a < b;
     result = a > b;
     result = a <= b;

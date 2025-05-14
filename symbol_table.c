@@ -59,6 +59,7 @@ Symbol* insert_symbol(Scope* scope, const char* name, DataType type, VarKind kin
     sym->param_count = 0;
     sym->param_types = NULL;
     sym->is_used = false;
+    sym->type_name = NULL; // Initialize type_name to NULL
 
     return sym;
 }

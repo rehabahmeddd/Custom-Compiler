@@ -57,8 +57,24 @@ DataType infer_expr_type(Scope* current_scope,char* expr) {
     if (strcmp(expr, "true") == 0 || strcmp(expr, "false") == 0 ) return TYPE_BOOL;
     if (expr[0] == '"') return TYPE_STRING;
     if (expr[0] == '\'') return TYPE_CHAR;
-    if (expr[0] == 't' && isdigit((int)expr[1])) return TYPE_INT; // assuming temporaries default to int
-    return TYPE_INT;
+    if (expr[0] == 't' && isdigit((int)expr[1])) 
+    if (expr[0] == 't' && isdigit(expr[1])) {
+        // Check for type suffix in temporary variable names (e.g., t0_float)
+       { char* type_suffix = strchr(expr, '_');
+        if (type_suffix != NULL) {
+            if (strcmp(type_suffix, "_int") == 0) return TYPE_INT;
+            if (strcmp(type_suffix, "_float") == 0) return TYPE_FLOAT;
+            if (strcmp(type_suffix, "_double") == 0) return TYPE_DOUBLE;
+            if (strcmp(type_suffix, "_bool") == 0) return TYPE_BOOL;
+            if (strcmp(type_suffix, "_string") == 0) return TYPE_STRING;
+            if (strcmp(type_suffix, "_char") == 0) return TYPE_CHAR;
+            if (strcmp(type_suffix, "_void") == 0) return TYPE_VOID;
+        }}
+
+
+
+ }
+     return TYPE_INT;
 }
 
 const char* dataTypeName[] = {

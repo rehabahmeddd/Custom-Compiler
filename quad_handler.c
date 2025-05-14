@@ -105,14 +105,29 @@ void quad_cleanup(QuadHandler *handler) {
 }
 
 // Generate a new temporary variable name
-char* quad_new_temp(QuadHandler *handler, DataType type) {
-    char *temp = (char*)malloc(20); // Enough for "t" + digits
-    if (!temp) {
+char *quad_new_temp(QuadHandler *handler, DataType type)
+{
+    char *temp = (char *)malloc(20); // Enough for "t" + digits + type suffix
+    if (!temp)
+    {
         fprintf(stderr, "Memory allocation error\n");
         exit(1);
     }
+
+    // Add type suffix to temporary variable names
+    const char* type_suffix = "";
+    switch (type) {
+        case TYPE_INT: type_suffix = "_int"; break;
+        case TYPE_FLOAT: type_suffix = "_float"; break;
+        case TYPE_DOUBLE: type_suffix = "_double"; break;
+        case TYPE_BOOL: type_suffix = "_bool"; break;
+        case TYPE_STRING: type_suffix = "_string"; break;
+        case TYPE_CHAR: type_suffix = "_char"; break;
+         case TYPE_VOID:   type_suffix = "_void"; break;
+        default: type_suffix = ""; break;
+    }
     
-    sprintf(temp, "t%d", handler->temp_count++);
+    sprintf(temp, "t%d%s", handler->temp_count++, type_suffix);
     return temp;
 }
 
