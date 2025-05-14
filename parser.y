@@ -331,6 +331,7 @@ logical_or_expression:
                 line_number, dataTypeName[leftType], dataTypeName[rightType]);
             exit(1);
         }
+         $$="true";
         printf("Logical OR\n"); 
     }
 ;
@@ -345,6 +346,7 @@ logical_and_expression:
                 line_number, dataTypeName[leftType], dataTypeName[rightType]);
             exit(1);
         }
+         $$="true";
         printf("Logical AND\n"); 
     }
 ;
@@ -359,6 +361,7 @@ equality_expression:
                 line_number, dataTypeName[leftType], dataTypeName[rightType]);
             exit(1);
         }
+         $$="true";
         printf("Equality\n");
     }
     | equality_expression NEQ relational_expression {
@@ -369,6 +372,7 @@ equality_expression:
                 line_number, dataTypeName[leftType], dataTypeName[rightType]);
             exit(1);
         }
+         $$="true";
         printf("Not Equal\n");
     }
 ;
@@ -383,6 +387,7 @@ relational_expression:
                 line_number, dataTypeName[leftType], dataTypeName[rightType]);
             exit(1);
         }
+        $$="true";
         printf("Less than\n"); 
     }
     | relational_expression GT additive_expression { 
@@ -393,6 +398,7 @@ relational_expression:
                 line_number, dataTypeName[leftType], dataTypeName[rightType]);
             exit(1);
         }
+        $$="true";
         printf("Greater than\n"); 
     }
     | relational_expression LE additive_expression { 
@@ -403,6 +409,7 @@ relational_expression:
                 line_number, dataTypeName[leftType], dataTypeName[rightType]);
             exit(1);
         }
+        $$="true";
         printf("Less than or equal\n"); 
     }
     | relational_expression GE additive_expression { 
@@ -413,6 +420,7 @@ relational_expression:
                 line_number, dataTypeName[leftType], dataTypeName[rightType]);
             exit(1);
         }
+        $$="true";
         printf("Greater than or equal\n"); 
     }
 ;
